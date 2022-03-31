@@ -1,6 +1,5 @@
 package prj;
 
-import org.joml.Vector2d;
 import org.joml.Vector2i;
 
 import javax.swing.*;
