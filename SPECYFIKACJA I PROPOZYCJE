@@ -1,0 +1,56 @@
+opis ogólny:
+gra 2d w stylu terraria (kwadratowe bloki)
+możliwość kopania bloków (moze także budowanie)
+cel podstawowy - dostać się do jądra Ziemi
+przez warstwy materiałów miękkich do kamieni powiększającej się twardości,
+lochy z potworami czy pogarszające się warunki (ciepło jądra ziemi, przemieszczające się warstwy skał, trzęsienia ziemi (nwm co, rzucam słowa na wiatr))
+
+jestem weebem dlatego myślę o animu Made in Abyss jako taki klimat który chciałbym osiągnąć
+
+zachęcam do zmian / nowości / co dodać / co odrzucić z miejsca
+
+Główny podział programu
+    - część GUI+IO (klient logiczny)
+        * rysowanie świata
+            jakiś podział świata na części w których gracz może się znajdować
+            żeby jak najbardziej ograniczyć rysowanie czegoś co nie będzie widoczne
+        * obsługa klawiatury i myszy
+        * komunikacja z serwerem logicznym
+    - część obsługi fizyki i mechanik (serwer logiczny)
+        * określenie wyglądu świata i elementów na nim się znajdujących
+        * generacja świata
+        * poruszanie się
+        * mechanika kopania
+        * mechanika walki (do obmyślenia)
+        * podstawowy crafting
+        * komunikacja z klientem logicznym
+    - część sieciowa
+        * model komunikacji lokalnej + sieciowej
+            proponuję rozwiązanie a'la minecraft 1.0+ to jest
+            podział programu na klient i serwer logiczny
+            klient zajmuje się osługą zdarzeń (klaw i mysz) i wyświetlaniem stanu świata na ekran użytkownika
+            serwer zajmuje się przetwarzaniem danych otrzymanych od klientów i aktualizowanie stanu świata
+            następnie przesyła odpowiedzi ze zaktualizowanym stanem do klientów
+
+            single player i multi różnią się tym, że serwer logiczny hosta ma przypisany socket i może się komunikować przez sieć
+            czyli
+            na maszynie hosta działa klient i serwer logiczny
+            na maszynie zdalnej działa klient logiczny i 'zdegradowany' serwer logiczny (sam nie podejmuje działań tylko przekazuje do klienta info od serwera hosta)
+
+            wymagałoby to rozdzielenie programu na co najmniej 2 wątki (kl i srw)
+            i zapewnienie poprawnej komunikacji między nimi
+    - część bazy danych (nwm po co nam to tak na prawdę)
+        * model komunikacji z bazą danych
+        * zapisywanie ważnych informacji (jeszcze do ustalenia)
+            zapis stanu świata
+            statyczne info tj aktualna konfiguracja (?)
+            profile użytkowników i logowanie się (??)
+    - część storyboard
+        * określenie czy wgl chcemy mieć jakąś historię czy to nie będzie za dużo roboty xD
+        * określanie celów gry i sposobów ich osiągania
+            jak na razie podstawowym celem ma być "The Descent" czyli poruszanie się wgłąb naszego świata
+            co kilka / kilkanaście metrów następuje 'bariera' tj jakaś przeszkoda którą gracz musi pokonać
+            (np potwór, zagadka czy np warstwa twardszego materiału która wymaga lepszych narzędzi)
+
+            co do zagadek to myślałem o takiej warstwie a'la pokój luster (kryształowa warstwa) czyli idziesz np w lewo, przegodzisz przez blok ale pojawiasz się w losowym miejscu z lewej lub z prawej
+            tworzyłoby to silną dezorientację w przestrzeni i potencjał do tworzenia czegoś w stylu labiryntu
