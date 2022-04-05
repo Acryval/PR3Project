@@ -22,7 +22,6 @@ Główny podział programu
         * poruszanie się
         * mechanika kopania
         * mechanika walki (do obmyślenia)
-        * podstawowy crafting
         * komunikacja z klientem logicznym
     - część sieciowa
         * model komunikacji lokalnej + sieciowej
@@ -45,6 +44,10 @@ Główny podział programu
             zapis stanu świata
             statyczne info tj aktualna konfiguracja (?)
             profile użytkowników i logowanie się (??)
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ODRZUCONE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
+
+        * podstawowy crafting
     - część storyboard
         * określenie czy wgl chcemy mieć jakąś historię czy to nie będzie za dużo roboty xD
         * określanie celów gry i sposobów ich osiągania
