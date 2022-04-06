@@ -5,7 +5,7 @@ public enum PacketType {
 
     public final String packetName;
 
-    PacketType(String name){
-        this.packetName = name;
+    PacketType(String packetName){
+        this.packetName = packetName;
     }
 }
