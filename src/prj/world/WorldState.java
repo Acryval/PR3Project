@@ -7,10 +7,10 @@ public class WorldState {
     //TODO put relevant data into worldstate
 
     public WorldState() {
-
+        //TODO set initial values
     }
 
-    public WorldState(WorldState baseState) {
-
+    public WorldState(WorldState initialState) {
+        //TODO copy data from initialState
     }
 }

@@ -12,11 +12,9 @@ public class ServerConnection extends Thread{
     private final Socket currentSession;
     private final World world;
 
-    public ServerConnection(ServerConnectionHandler connectionHandler, Socket currentSession) {
+    public ServerConnection(Socket currentSession, World world) {
         this.currentSession = currentSession;
-        world = connectionHandler.getServerInstance().getWorld();
-
-        this.start();
+        this.world = world;
     }
 
     @Override
@@ -29,18 +27,17 @@ public class ServerConnection extends Thread{
 
             if(data instanceof PacketDataType){
                 PacketDataType packetData = (PacketDataType) data;
-                String dataTypeName = packetData.getDataTypeName();
 
                 //TODO make logger
                 System.out.println("[" + new Date(System.currentTimeMillis()) + "] " + "Received packet of type: " + packetData.getDataTypeName());
 
-                //TODO cast PacketDataType into an actual datatype and change the current world state
+                world.applyPacketData(packetData);
 
                 if(packetData.expectsAnswer()){
                     //TODO prepare answer for received packet
                 }
             }else{
-                System.out.println("Received data is not an instance of PacketDataType");
+                System.out.println("[" + new Date(System.currentTimeMillis()) + "] " + "Data received from " + currentSession.getInetAddress() + " is not an instance of PacketDataType");
             }
         } catch (IOException e) {
             System.out.println("Error while receiving data: " + e.getMessage());
@@ -50,7 +47,7 @@ public class ServerConnection extends Thread{
             try {
                 currentSession.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Error closing socket");
             }
         }
     }

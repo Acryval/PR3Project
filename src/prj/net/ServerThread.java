@@ -13,8 +13,8 @@ public class ServerThread extends Thread{
 
     private boolean running;
 
-    public ServerThread(int serverPort, int backlog, WorldState initialState) throws IOException {
-        this.world = new World(initialState);
+    public ServerThread(int serverPort, int backlog, World localWorld) throws IOException {
+        this.world = new World(localWorld);
         serverSocket = new ServerSocket(serverPort, backlog);
         running = true;
 
@@ -45,7 +45,7 @@ public class ServerThread extends Thread{
         while(running){
             frameStart = System.nanoTime();
 
-            update((double)(frameStart - lastFrameStart)/1000000000);
+            world.updateState((double)(frameStart - lastFrameStart)/1000000000);
 
             lastFrameStart = frameStart;
         }
@@ -53,9 +53,5 @@ public class ServerThread extends Thread{
         connectionHandler.shutdown();
         //TODO make logger
         System.out.println("[" + new Date(System.currentTimeMillis()) + "] " + "Server thread stopped");
-    }
-
-    public void update(double dtime){
-        //TODO update world state each frame
     }
 }

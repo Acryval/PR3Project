@@ -1,8 +1,7 @@
 package prj.net;
 
-import prj.net.packet.Packet;
 import prj.net.packet.PacketDataType;
-import prj.world.WorldState;
+import prj.world.World;
 
 import java.io.IOException;
 import java.util.Random;
@@ -32,11 +31,11 @@ public class ClientNetworkManager {
         this.localServerBacklog = localServerBacklog;
     }
 
-    public <T extends PacketDataType> Object send(T data){
-        return new Packet<T>(serverHost, serverPort, data).getPossibleData();
+    public <T extends PacketDataType> void sendAndProcessPacket(T data, World localWorld){
+        new ClientConnection<T>(serverHost, serverPort, localWorld, data);
     }
 
-    public void startServer(WorldState initialState){
+    public void startServer(World localWorld){
         if(!serverHost.equals("localhost")){
             System.out.println("Cannot start a server on a host other than localhost");
             return;
@@ -48,7 +47,7 @@ public class ClientNetworkManager {
         }
 
         try {
-            serverInstance = new ServerThread(serverPort, localServerBacklog, initialState);
+            serverInstance = new ServerThread(serverPort, localServerBacklog, localWorld);
         }catch (IOException e){
             System.out.println();
         }

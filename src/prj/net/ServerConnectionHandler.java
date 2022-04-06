@@ -1,9 +1,6 @@
 package prj.net;
 
-import prj.world.World;
-
 import java.io.IOException;
-import java.net.Socket;
 import java.util.Date;
 
 public class ServerConnectionHandler extends Thread{
@@ -24,7 +21,7 @@ public class ServerConnectionHandler extends Thread{
         System.out.println("[" + new Date(System.currentTimeMillis()) + "] " + "Server connection handler thread started");
         while(running){
             try {
-                new ServerConnection(this, serverInstance.getServerSocket().accept());
+                new ServerConnection(serverInstance.getServerSocket().accept(), serverInstance.getWorld());
             } catch (IOException e) {
                 System.out.println("Failed to accept connection at: " + new Date(System.currentTimeMillis()));
             }
@@ -35,9 +32,5 @@ public class ServerConnectionHandler extends Thread{
 
     public void shutdown(){
         running = false;
-    }
-
-    public ServerThread getServerInstance() {
-        return serverInstance;
     }
 }
