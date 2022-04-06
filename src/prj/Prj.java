@@ -6,7 +6,7 @@ import java.awt.*;
 public class Prj extends JFrame {
     public Prj(String title, int width, int height) throws HeadlessException {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setContentPane(new PrjContent(width, height));
+        setContentPane(new ClientThread(width, height));
         setTitle(title);
 
         pack();
@@ -14,7 +14,7 @@ public class Prj extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
-        ((PrjContent)getContentPane()).run();
+        ((ClientThread)getContentPane()).run();
     }
 
     public static void main(String[] args) {
