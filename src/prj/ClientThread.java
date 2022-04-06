@@ -1,24 +1,31 @@
 package prj;
 
 import org.joml.Vector2i;
+import prj.world.World;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
-public class PrjContent extends JPanel implements MouseListener, MouseMotionListener {
+public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {
+    private World world;
+    private InetSocketAddress serverAddress;
+
     private InputMap im;
     private ActionMap am;
 
-    private double fpsTarget, fpsTargetPrintDelay, currentFpsTargetPrintDelay, actualFps;
+    private double fpsTargetPrintDelay;
+    private double currentFpsTargetPrintDelay;
+    private double actualFps;
     private boolean running, paused, mousePressed;
-    private long lastTime;
     private Vector2i mouse, dm, offset;
 
     private Font defaultFont;
 
-    public PrjContent(int width, int height) {
+    public ClientThread(int width, int height) {
         setBackground(Color.black);
         setPreferredSize(new Dimension(width, height));
         setFocusable(true);
@@ -35,7 +42,7 @@ public class PrjContent extends JPanel implements MouseListener, MouseMotionList
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
 
-        fpsTarget = 120;
+        double fpsTarget = 120;
         running = true;
         paused = false;
         mousePressed = false;
@@ -49,6 +56,8 @@ public class PrjContent extends JPanel implements MouseListener, MouseMotionList
         offset = new Vector2i();
 
         defaultFont = new Font("Arial", Font.PLAIN, 11);
+
+        //TODO load world from save or generate new
     }
 
     public void loadActions(){
@@ -95,29 +104,15 @@ public class PrjContent extends JPanel implements MouseListener, MouseMotionList
     }
 
     public void run(){
-        long start, elapsed, wait;
-
-        lastTime = System.nanoTime();
+        long start, lastTime = System.nanoTime();
 
         while(running){
             start = System.nanoTime();
 
             update((double)(start - lastTime)/1000000000);
+
             lastTime = start;
             repaint();
-
-            elapsed = System.nanoTime() - start;
-            wait = (long)(1000 / fpsTarget - elapsed / 1000000);
-            if(wait < 0){
-                System.out.println("Frame slowed by: " + -wait + " ms, eqivalent to " + String.format("%.2f", -wait * fpsTarget / 1000) + " frames at " + fpsTarget + " fps");
-                wait = 0;
-            }
-
-            try{
-                Thread.sleep(wait);
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
         }
 
         System.exit(0);
