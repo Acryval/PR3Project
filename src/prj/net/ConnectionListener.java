@@ -1,6 +1,6 @@
 package prj.net;
 
-import prj.net.packet.PacketDataType;
+import prj.net.packet.Packet;
 import prj.net.packet.PacketReceiver;
 import prj.net.packet.PacketSender;
 import prj.world.World;
@@ -51,7 +51,7 @@ public class ConnectionListener extends Thread{
         return new InetSocketAddress(listenerSocket.getInetAddress(), listenerSocket.getLocalPort());
     }
 
-    public static <T extends PacketDataType> void sendData(InetSocketAddress receiverAddress, World localWorld, T data) throws IOException {
+    public static <T extends Packet> void sendData(InetSocketAddress receiverAddress, World localWorld, T data) throws IOException {
         new PacketSender<>(new Socket(receiverAddress.getHostName(), receiverAddress.getPort()), localWorld, data).start();
     }
 }

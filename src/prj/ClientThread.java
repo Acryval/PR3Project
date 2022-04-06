@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {

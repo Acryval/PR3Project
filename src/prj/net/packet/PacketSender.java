@@ -5,7 +5,7 @@ import prj.world.World;
 import java.io.IOException;
 import java.net.Socket;
 
-public class PacketSender<T extends PacketDataType> extends Thread {
+public class PacketSender<T extends Packet> extends Thread {
     private final Socket sessionSocket;
     private final World localWorld;
     private final T dataIn;
@@ -22,11 +22,9 @@ public class PacketSender<T extends PacketDataType> extends Thread {
             Packet.send(sessionSocket, dataIn);
 
             if(dataIn.expectsAnswer()){
-                Object o = Packet.receive(sessionSocket);
+                Packet packet = Packet.receive(sessionSocket);
 
-                if(o instanceof PacketDataType packetData){
-                    localWorld.applyPacketData(packetData);
-                }
+                localWorld.applyPacketData(packet);
             }
         } catch (IOException e) {
             System.err.println("Error while processing packet: " + e.getMessage());

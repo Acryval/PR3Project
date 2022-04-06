@@ -17,14 +17,12 @@ public class PacketReceiver extends Thread{
     @Override
     public void run() {
         try {
-            Object data = Packet.receive(sessionSocket);
+            Packet packet = Packet.receive(sessionSocket);
 
-            if(data instanceof PacketDataType packetData){
-                localWorld.applyPacketData(packetData);
+            localWorld.applyPacketData(packet);
 
-                if(packetData.expectsAnswer()){
-                    //TODO prepare answer for received packet
-                }
+            if(packet != null && packet.expectsAnswer()){
+                //TODO prepare answer for received packet
             }
         } catch (IOException e) {
             System.err.println("Error while receiving packet: " + e.getMessage());

@@ -3,7 +3,7 @@ package prj.world;
 // Klasa przechowująca metody zależne od aktualnego stanu świata i bezpośrednio nań wpływające
 
 import prj.net.ConnectionListener;
-import prj.net.packet.PacketDataType;
+import prj.net.packet.Packet;
 
 import java.io.IOException;
 import java.util.Random;
@@ -39,7 +39,8 @@ public class World {
         //TODO generate new world
     }
 
-    public <T extends PacketDataType> void applyPacketData(T data){
+    public <T extends Packet> void applyPacketData(T data){
+        if(data == null) return;
         //TODO applyPacketCode --PacketDataType dependent--
     }
 
