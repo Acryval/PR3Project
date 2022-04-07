@@ -8,12 +8,13 @@ import java.net.InetSocketAddress;
 
 public class ServerThread extends Thread{
     private final World world;
-    private ServerNetworkManager networkManager;
+    private final ServerNetworkManager networkManager;
 
     private boolean running;
 
     public ServerThread(World localWorld, int listenerPort, int listenerBacklog) throws IOException {
         world = new World(localWorld, listenerPort, listenerBacklog, this);
+        networkManager = new ServerNetworkManager(this);
         running = true;
     }
 
