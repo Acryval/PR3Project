@@ -22,6 +22,6 @@ public class Wall {
         g2d.setColor(Color.BLACK);
         g2d.drawRect(x, y, width, height);
         g2d.setColor(Color.WHITE);
-        g2d.fillRect(x + 1, y + 1, width - 2, height - 2);
+        g2d.fillRect(x + 1, y + 1, width - 1, height - 1);
     }
 }

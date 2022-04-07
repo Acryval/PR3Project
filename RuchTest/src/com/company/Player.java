@@ -1,14 +1,18 @@
 package com.company;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class Player {
 
+    // część pól jest publiczna, bo nie chce mi się robić getterów
     GamePanel panel;
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    public int x;
+    public int y;
+    public int startingPosX;
+    public int startingPosY;
+    public int width;
+    public int height;
     private double velocityX;
     private double velocityY;
     Rectangle hitbox;
@@ -16,16 +20,25 @@ public class Player {
     public boolean keyRight;
     public boolean keyDown;
     public boolean keyUp;
+    private Image image;
 
     public Player(int x, int y, GamePanel panel) {
         this.x = x;
         this.y = y;
+        this.startingPosX = x;
+        this.startingPosY = y;
         this.velocityX = 0;
         this.velocityY = 0;
         this.panel = panel;
         this.width = 50;
         this.height = 100;
         hitbox = new Rectangle(this.x, this.y, this.width, this.height);
+        loadImage();
+    }
+
+    private void loadImage() {
+        ImageIcon ii = new ImageIcon("playerCharacterPrototype.png");
+        image = ii.getImage();
     }
 
     public void move() {
@@ -89,7 +102,8 @@ public class Player {
     }
 
     public void draw(Graphics2D g2d) {
-        g2d.setColor(Color.BLACK);
-        g2d.fillRect(x, y, width, height);
+        //g2d.setColor(Color.BLACK);
+        //g2d.fillRect(x, y, width, height);
+        g2d.drawImage(image, x, y, panel);
     }
 }
