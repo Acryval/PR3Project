@@ -4,27 +4,40 @@ import prj.world.World;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class PacketSender<T extends Packet> extends Thread {
+public class PacketSender extends Thread {
     private final Socket sessionSocket;
     private final World localWorld;
-    private final T dataIn;
+    private final List<Packet> dataIn;
 
-    public PacketSender(Socket sessionSocket, World localWorld, T dataIn) {
+    public PacketSender(Socket sessionSocket, World localWorld, Packet... dataIn) {
         this.sessionSocket = sessionSocket;
         this.localWorld = localWorld;
-        this.dataIn = dataIn;
+        this.dataIn = new ArrayList<>();
+
+        Collections.addAll(this.dataIn, dataIn);
     }
 
     @Override
     public void run() {
         try {
+            int expectedPacketNum = 0;
+
+            if(dataIn.size() > 1){
+                Packet.send(sessionSocket, new MultiPacket(dataIn.size()));
+            }
+
+            for(Packet p : dataIn){
+                expectedPacketNum += p.expectedReturnPackets.size();
+            }
+
             Packet.send(sessionSocket, dataIn);
 
-            if(dataIn.expectsAnswer()){
-                Packet packet = Packet.receive(sessionSocket);
-
-                localWorld.applyPacketData(packet);
+            for (int i = 0; i < expectedPacketNum; i++) {
+                localWorld.applyPacketData(Packet.receive(sessionSocket));
             }
         } catch (IOException e) {
             System.err.println("Error while processing packet: " + e.getMessage());

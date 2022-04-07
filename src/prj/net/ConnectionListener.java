@@ -1,15 +1,13 @@
 package prj.net;
 
-import prj.net.packet.Packet;
 import prj.net.packet.PacketReceiver;
-import prj.net.packet.PacketSender;
 import prj.world.World;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Date;
+import java.util.Random;
 
 public class ConnectionListener extends Thread{
     private final World world;
@@ -51,7 +49,7 @@ public class ConnectionListener extends Thread{
         return new InetSocketAddress(listenerSocket.getInetAddress(), listenerSocket.getLocalPort());
     }
 
-    public static <T extends Packet> void sendData(InetSocketAddress receiverAddress, World localWorld, T data) throws IOException {
-        new PacketSender<>(new Socket(receiverAddress.getHostName(), receiverAddress.getPort()), localWorld, data).start();
+    public static int getRandomPort(){
+        return new Random().nextInt(50000, 59999);
     }
 }

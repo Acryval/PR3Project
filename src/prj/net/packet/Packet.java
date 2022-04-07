@@ -5,16 +5,24 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Packet implements Serializable {
     public abstract PacketType getPacketType();
-    public abstract boolean expectsAnswer();
+    public List<PacketType> expectedReturnPackets = new ArrayList<>();
 
-    public static <T extends Packet> void send(Socket session, T data) throws IOException {
+    public static void send(Socket session, List<Packet> data) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(session.getOutputStream());
-        out.writeObject(data);
+        for(Packet p : data){
+            out.writeObject(p);
+        }
         out.flush();
         out.close();
+    }
+
+    public static void send(Socket session, Packet...data) throws IOException {
+        Packet.send(session, List.of(data));
     }
 
     public static Packet receive(Socket session) throws IOException, ClassNotFoundException {
@@ -26,9 +34,5 @@ public abstract class Packet implements Serializable {
             return packet;
         }
         return null;
-    }
-
-    public String getPacketName(){
-        return getPacketType().packetName;
     }
 }

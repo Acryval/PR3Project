@@ -1,17 +1,19 @@
 package prj;
 
 import org.joml.Vector2i;
+import prj.net.ClientNetworkManager;
 import prj.world.World;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {
     private World world;
-    private InetSocketAddress serverAddress;
+    private ClientNetworkManager networkManager;
 
     private InputMap im;
     private ActionMap am;
@@ -102,7 +104,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         g.transform(new AffineTransform(1, 0, 0, -1, 0, 0));
     }
 
-    public void run(){
+    public void run() throws IOException {
         long start, lastTime = System.nanoTime();
 
         while(running){
@@ -113,6 +115,9 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
             lastTime = start;
             repaint();
         }
+
+        networkManager.shutdown();
+        world.getConnectionListener().shutdown();
 
         System.exit(0);
     }
@@ -163,5 +168,17 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
         mouse.set(mouseEvent.getX(), mouseEvent.getY()).sub(offset);
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
+    public ClientNetworkManager getNetworkManager() {
+        return networkManager;
+    }
+
+    public InetSocketAddress getListenerAddress(){
+        return world.getConnectionListener().getListenerAddress();
     }
 }
