@@ -44,15 +44,15 @@ public class ServerThread extends Thread{
         running = false;
     }
 
-    public InetSocketAddress getListenerAddress(){
-        return world.getConnectionListener().getListenerAddress();
-    }
-
     public World getWorld() {
         return world;
     }
 
     public ServerNetworkManager getNetworkManager() {
         return networkManager;
+    }
+
+    public InetSocketAddress getListenerAddress(){
+        return world.getConnectionListener().getListenerAddress();
     }
 }
