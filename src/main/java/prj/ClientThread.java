@@ -18,9 +18,9 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     private InputMap im;
     private ActionMap am;
 
-    private double fpsTargetPrintDelay;
-    private double currentFpsTargetPrintDelay;
-    private double actualFps;
+    private long totalFpsUpdateFrames;
+    private double fpsUpdateDelay, totalFpsUpdateTime;
+    private double fps, targetMillis;
     private boolean running, paused, mousePressed;
     private Vector2i mouse, dm, offset;
 
@@ -43,14 +43,16 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
 
-        double fpsTarget = 120;
         running = true;
         paused = false;
         mousePressed = false;
 
-        fpsTargetPrintDelay = 0.2;
-        currentFpsTargetPrintDelay = fpsTargetPrintDelay;
-        actualFps = fpsTarget;
+        fps = 60;
+        fpsUpdateDelay = 200;
+        totalFpsUpdateFrames = 0;
+        totalFpsUpdateTime = 0;
+
+        targetMillis = 1000 / fps;
 
         mouse = new Vector2i();
         dm = new Vector2i();
@@ -78,15 +80,15 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void update(double dt){
+        totalFpsUpdateTime += dt;
+        totalFpsUpdateFrames++;
+
         if(paused) return;
 
-        currentFpsTargetPrintDelay -= dt;
-        if(currentFpsTargetPrintDelay <= 0){
-            while(currentFpsTargetPrintDelay <= 0){
-                currentFpsTargetPrintDelay += fpsTargetPrintDelay;
-            }
-
-            actualFps = 1.0 / dt;
+        if(totalFpsUpdateTime >= fpsUpdateDelay){
+            fps = 1000 * totalFpsUpdateFrames / totalFpsUpdateTime;
+            totalFpsUpdateFrames = 0;
+            totalFpsUpdateTime = 0;
         }
     }
 
@@ -94,7 +96,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         g.setColor(Color.white);
         g.setFont(defaultFont);
 
-        g.drawString(String.format("FPS: %.0f", actualFps), 2, 11);
+        g.drawString(String.format("FPS: %.0f", fps), 2, 11);
         g.translate(offset.x, offset.y);
 
         g.drawString("Mouse: ",2,23);
@@ -104,20 +106,37 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         g.transform(new AffineTransform(1, 0, 0, -1, 0, 0));
     }
 
-    public void run() throws IOException {
-        long start, lastTime = System.nanoTime();
+    public void run() {
+        long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
         while(running){
-            start = System.nanoTime();
+            frameStart = System.nanoTime();
 
-            update((double)(start - lastTime)/1000000000);
-
-            lastTime = start;
+            update((double)(frameStart - lastFrameUpdate) / 1000000);
             repaint();
+
+            lastFrameUpdate = frameStart;
+
+            threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
+
+            if(threadWait < 0){
+                System.out.printf("[Client] Lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis);
+                threadWait = 0;
+            }
+
+            try{
+                Thread.sleep(threadWait);
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
 
-        networkManager.shutdown();
-        world.getConnectionListener().shutdown();
+        /*try{
+            networkManager.shutdown();
+            world.getConnectionListener().shutdown();
+        }catch (IOException e){
+            System.err.println("Failed to shut down client connection listener");
+        }*/
 
         System.exit(0);
     }
@@ -163,6 +182,14 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
             offset.add(temp).sub(dm);
             dm.set(temp);
         }
+    }
+
+    public void setFpsUpdateDelay(double fpsUpdateDelay) {
+        this.fpsUpdateDelay = fpsUpdateDelay;
+    }
+
+    public void setFPSTarget(double target) {
+        this.targetMillis = 1000 / target;
     }
 
     @Override
