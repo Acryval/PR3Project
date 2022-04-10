@@ -6,13 +6,7 @@ import prj.net.packet.Packet;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.sql.Time;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +40,7 @@ public class Logger {
             try {
                 FileWriter w = new FileWriter(Prj.LOGFILE, true);
                 w.append(msg).append(System.lineSeparator());
+                w.flush();
                 w.close();
             }catch (IOException e){
                 System.err.println("File " + Prj.LOGFILE + " inaccessible");

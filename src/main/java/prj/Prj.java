@@ -1,7 +1,12 @@
 package prj;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -12,13 +17,19 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
 
-public class Prj extends JFrame {
+public class Prj extends JFrame{
     public static boolean DEBUG = true;
     public static String LOGFILE = null;
 
+    private final ClientThread cth;
+
     public Prj(String title, int width, int height) throws HeadlessException {
+        setupLogfile("GameLog");
+
+        cth = new ClientThread(width, height);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setContentPane(new ClientThread(width, height));
+        setContentPane(cth);
         setTitle(title);
 
         pack();
@@ -26,9 +37,13 @@ public class Prj extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
-        setupLogfile("log");
-
-        ((ClientThread)getContentPane()).run();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                cth.shutdown();
+            }
+        });
+        cth.run();
     }
 
     public static void setupLogfile(String filename){

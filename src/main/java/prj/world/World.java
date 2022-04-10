@@ -21,7 +21,7 @@ public class World {
     private final ServerThread serverInstance;
     private final ClientThread clientInstance;
 
-    public World(World localWorld, int listenerPort, int listenerBacklog, ServerThread serverInstance) throws IOException {
+    public World(World localWorld, int listenerPort, int listenerBacklog, ServerThread serverInstance) {
         logger.setName("Server world").dbg("init start");
 
         this.serverInstance = serverInstance;
@@ -35,7 +35,7 @@ public class World {
         logger.dbg("init end");
     }
 
-    public World(int listenerPort, int listenerBacklog, ClientThread clientInstance) throws IOException {
+    public World(int listenerPort, int listenerBacklog, ClientThread clientInstance) {
         logger.setName("Client world").dbg("init start");
 
         this.serverInstance = null;

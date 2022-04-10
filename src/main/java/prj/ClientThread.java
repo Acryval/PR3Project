@@ -6,9 +6,12 @@ import prj.net.ClientNetworkManager;
 import prj.world.World;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {
@@ -64,6 +67,9 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         defaultFont = new Font("Arial", Font.PLAIN, 11);
 
         //TODO load world from save or generate new
+        world = new World(0, 10, this);
+        if(world.getConnectionListener().doesListenerSocketFailed()) System.exit(1);
+        networkManager = new ClientNetworkManager(this);
     }
 
     public void loadActions(){
@@ -109,8 +115,10 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         g.transform(new AffineTransform(1, 0, 0, -1, 0, 0));
     }
 
+
+
     public void run() {
-        logger.dbg("thread start");
+        logger.out("thread start");
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
         while(running){
@@ -134,16 +142,6 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
                 logger.err("interrupted: " + e.getMessage());
             }
         }
-
-        /*try{
-            networkManager.shutdown();
-            world.getConnectionListener().shutdown();
-        }catch (IOException e){
-            logger.err("Failed to shut down client connection listener");
-        }*/
-
-        logger.dbg("thread stop");
-        System.exit(0);
     }
 
     @Override
@@ -195,6 +193,18 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
 
     public void setFPSTarget(double target) {
         this.targetMillis = 1000 / target;
+    }
+
+    public void shutdown(){
+        running = false;
+
+        try{
+            networkManager.shutdown();
+            world.getConnectionListener().shutdown();
+        }catch (IOException e){
+            logger.err("Failed to shut down client connection listener");
+        }
+        logger.out("thread stop");
     }
 
     @Override

@@ -28,7 +28,7 @@ public class ServerThread extends Thread {
 
     @Override
     public void run() {
-        logger.dbg("thread start");
+        logger.out("thread start");
 
         long frameStart, lastFrameStart = System.nanoTime(), threadWait;
 
@@ -60,7 +60,7 @@ public class ServerThread extends Thread {
             logger.err("failed to shut down server connection listener");
         }
 
-        logger.dbg("thread stop");
+        logger.out("thread stop");
     }
 
     public ServerThread setTargetFPS(double target){

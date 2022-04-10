@@ -13,25 +13,30 @@ import java.util.Random;
 public class ConnectionListener extends Thread {
     private final Logger logger = new Logger("");
     private final World world;
-    private final ServerSocket listenerSocket;
+    private ServerSocket listenerSocket;
 
     private boolean running;
 
-    public ConnectionListener(World world, int listenerPort, int listenerBacklog) throws IOException {
+    public ConnectionListener(World world, int listenerPort, int listenerBacklog) {
         logger.setName((world.isServerWorld() ? "Server" : "Client") + " connection listener").dbg("init start");
 
         this.world = world;
-        listenerSocket = new ServerSocket(listenerPort, listenerBacklog);
-        running = true;
+        try {
+            listenerSocket = new ServerSocket(listenerPort, listenerBacklog);
+        }catch (IOException e){
+            logger.err("could not initialize listener socket: " + e.getMessage());
+        }
 
-        logger.dbg("listening for connections at " + getListenerAddress());
+        running = listenerSocket != null;
+
+        logger.out("listening for connections at " + getListenerAddress());
 
         logger.dbg("init end");
     }
 
     @Override
     public void run(){
-        logger.dbg("thread start");
+        logger.out("thread start");
 
         while(running){
             try {
@@ -54,7 +59,11 @@ public class ConnectionListener extends Thread {
             }
         }
 
-        logger.dbg("thread stop");
+        logger.out("thread stop");
+    }
+
+    public boolean doesListenerSocketFailed(){
+        return listenerSocket == null;
     }
 
     public void shutdown() throws IOException {
