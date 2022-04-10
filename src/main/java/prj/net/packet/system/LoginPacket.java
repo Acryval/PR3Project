@@ -1,8 +1,11 @@
-package prj.net.packet;
+package prj.net.packet.system;
+
+import prj.net.packet.Packet;
+import prj.net.packet.PacketType;
 
 import java.net.InetSocketAddress;
 
-public class LoginPacket extends Packet{
+public class LoginPacket extends Packet {
     @Override
     public PacketType getPacketType() {
         return PacketType.login;
@@ -17,7 +20,7 @@ public class LoginPacket extends Packet{
 
     public LoginPacket(InetSocketAddress clientAddress) {
         this.clientAddress = clientAddress;
-        expectedReturnPackets.add(PacketType.getWorldState);
+        expectedReturnPackets.add(PacketType.worldState);
     }
 
     public InetSocketAddress getClientAddress() {

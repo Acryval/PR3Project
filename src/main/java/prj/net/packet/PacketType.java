@@ -2,11 +2,18 @@ package prj.net.packet;
 
 public enum PacketType {
     empty("empty"),
+    custom("custom"),
     login("login"),
     logout("logout"),
-    serverShutdown("serverShutdown"),
     multiPacket("multiPacket"),
-    getWorldState("getWorldState");
+    serverShutdown("serverShutdown"),
+
+    getWorldState("getWorldState"),
+    worldState("worldState"),
+
+    playerMove("playerMove"),
+    getPlayerPos("getPlayerPos"),
+    playerPos("playerPos");
 
     private final String packetName;
 

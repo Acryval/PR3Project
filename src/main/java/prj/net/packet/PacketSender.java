@@ -1,12 +1,12 @@
 package prj.net.packet;
 
 import prj.log.Logger;
+import prj.net.packet.system.MultiPacket;
 import prj.world.World;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PacketSender extends Thread {
@@ -15,13 +15,17 @@ public class PacketSender extends Thread {
     private final World localWorld;
     private final List<Packet> dataIn;
 
-    public PacketSender(Socket sessionSocket, World localWorld, Packet... dataIn) {
+    public PacketSender(Socket sessionSocket, World localWorld, List<Packet> dataIn) {
         logger.setName(String.format("%s packet sender [%s]", (localWorld.isServerWorld() ? "Server" : "Client"), sessionSocket.getInetAddress()));
         this.sessionSocket = sessionSocket;
         this.localWorld = localWorld;
         this.dataIn = new ArrayList<>();
 
-        Collections.addAll(this.dataIn, dataIn);
+        this.dataIn.addAll(dataIn);
+    }
+
+    public PacketSender(Socket sessionSocket, World localWorld, Packet... dataIn) {
+        this(sessionSocket, localWorld, List.of(dataIn));
     }
 
     @Override

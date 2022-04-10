@@ -6,17 +6,19 @@ import prj.ClientThread;
 import prj.ServerThread;
 import prj.log.Logger;
 import prj.net.ConnectionListener;
-import prj.net.packet.GetWorldStatePacket;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
+import prj.net.packet.system.LoginPacket;
+import prj.net.packet.system.LogoutPacket;
+import prj.net.packet.world.WorldStatePacket;
 
-import java.io.IOException;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class World {
     private final Logger logger = new Logger("");
-    private final WorldState currentState;
+    private final WorldState state;
     private final ConnectionListener connectionListener;
     private final ServerThread serverInstance;
     private final ClientThread clientInstance;
@@ -28,7 +30,7 @@ public class World {
         this.clientInstance = null;
 
         this.connectionListener = new ConnectionListener(this, listenerPort, listenerBacklog);
-        this.currentState = new WorldState(localWorld.getCurrentState());
+        this.state = new WorldState(localWorld.getState());
 
         connectionListener.start();
 
@@ -42,7 +44,7 @@ public class World {
         this.clientInstance = clientInstance;
 
         this.connectionListener = new ConnectionListener(this, listenerPort, listenerBacklog);
-        this.currentState = new WorldState();
+        this.state = new WorldState();
 
         generateWorld();
 
@@ -51,8 +53,8 @@ public class World {
         this.logger.dbg("init end");
     }
 
-    public WorldState getCurrentState() {
-        return currentState;
+    public WorldState getState() {
+        return state;
     }
 
     public ConnectionListener getConnectionListener() {
@@ -72,12 +74,40 @@ public class World {
     }
 
     public void generateWorld(){
-        //TODO generate new world
     }
 
     public void applyPacketData(Packet data){
         if(data == null) return;
         //TODO applyPacketCode --PacketType dependent--
+
+        switch (data.getPacketType()){
+            case login -> {
+                if(isServerWorld()){
+                    LoginPacket p = (LoginPacket) data;
+                    getServerInstance().getNetworkManager().clientLogin(p.getClientAddress());
+                }
+            }
+            case logout -> {
+                if(isServerWorld()){
+                    getServerInstance().getNetworkManager().clientLogout(((LogoutPacket)data).getClientAddress());
+                }
+            }
+            case serverShutdown -> {
+                if(!isServerWorld()){
+                    getClientInstance().getNetworkManager().shutdown();
+                }
+            }
+            case worldState -> {
+                synchronized(state){
+                    ((WorldStatePacket)data).unpacInto(state);
+                }
+            }
+            case playerMove -> {
+            }
+            case playerPos -> {
+            }
+            default -> {}
+        }
     }
 
     public List<Packet> preparePackets(List<PacketType> returnPacketTypes){
@@ -86,7 +116,9 @@ public class World {
 
         for(PacketType pt : returnPacketTypes){
             switch (pt){
-                case getWorldState -> out.add(new GetWorldStatePacket(currentState));
+                case worldState -> out.add(new WorldStatePacket(state));
+                case getPlayerPos -> {
+                }
                 default -> {}
             }
         }
@@ -95,7 +127,24 @@ public class World {
     }
 
     public void updateState(double dtime){
-        //TODO update world state
+        if(isServerWorld()){
+            WorldState temp = new WorldState(state);
+            List<Packet> updatePackets = new ArrayList<>();
+
+
+            send(updatePackets);
+        }
+    }
+
+    public void draw(Graphics2D g){
+    }
+
+    public void send(List<Packet> packets){
+        if(isServerWorld()){
+            getServerInstance().getNetworkManager().broadcast(packets);
+        }else{
+            getClientInstance().getNetworkManager().send(packets);
+        }
     }
 
     //TODO make relevant methods to change the world state

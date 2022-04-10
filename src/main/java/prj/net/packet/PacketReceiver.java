@@ -1,6 +1,7 @@
 package prj.net.packet;
 
 import prj.log.Logger;
+import prj.net.packet.system.MultiPacket;
 import prj.world.World;
 
 import java.io.IOException;
@@ -27,25 +28,7 @@ public class PacketReceiver extends Thread {
             Packet packet = Packet.receive(sessionSocket);
 
             if(packet != null){
-
                 logger.announcePackets(null, "received", packet);
-
-                if(localWorld.isServerWorld()){
-                    if(packet instanceof LoginPacket lp){
-                        logger.dbg("LOGIN " + lp.getClientAddress());
-                        localWorld.getServerInstance().getNetworkManager().clientLogin(lp.getClientAddress());
-                    }else if(packet instanceof LogoutPacket lp){
-                        logger.dbg("LOGOUT " + lp.getClientAddress());
-                        localWorld.getServerInstance().getNetworkManager().clientLogout(lp.getClientAddress());
-                    }
-                }else{
-                    if(packet instanceof ServerShutdownPacket ssp){
-                        logger.dbg("SERVER SHUTDOWN");
-                        if(localWorld.getClientInstance().getNetworkManager() != null)
-                            localWorld.getClientInstance().getNetworkManager().shutdown();
-                    }
-                }
-
                 List<PacketType> returnPacketTypes;
 
                 if(packet instanceof MultiPacket mp){

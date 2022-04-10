@@ -37,13 +37,15 @@ public class Logger {
                 System.out.println(msg);
             }
         }else{
-            try {
-                FileWriter w = new FileWriter(Prj.LOGFILE, true);
-                w.append(msg).append(System.lineSeparator());
-                w.flush();
-                w.close();
-            }catch (IOException e){
-                System.err.println("File " + Prj.LOGFILE + " inaccessible");
+            if(type != LogType.DEBUG || Prj.DEBUG) {
+                try {
+                    FileWriter w = new FileWriter(Prj.LOGFILE, true);
+                    w.append(msg).append(System.lineSeparator());
+                    w.flush();
+                    w.close();
+                } catch (IOException e) {
+                    System.err.println("File " + Prj.LOGFILE + " inaccessible");
+                }
             }
         }
     }

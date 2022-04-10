@@ -1,24 +1,19 @@
 package prj;
 
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
 
 public class Prj extends JFrame{
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     public static String LOGFILE = null;
 
     private final ClientThread cth;
@@ -57,6 +52,12 @@ public class Prj extends JFrame{
     }
 
     public static void main(String[] args) {
+        for(String arg : args){
+            if(arg.contains("-d")){
+                Prj.DEBUG = true;
+            }
+        }
+
         new Prj("PR3 Project Window", 1200, 700);
     }
 }

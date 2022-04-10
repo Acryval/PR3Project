@@ -3,16 +3,16 @@ package prj;
 import org.joml.Vector2i;
 import prj.log.Logger;
 import prj.net.ClientNetworkManager;
+import prj.net.packet.player.PlayerMovePacket;
 import prj.world.World;
 
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+
+import static prj.net.packet.player.PlayerMovePacket.Direction.*;
 
 public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {
     private final Logger logger = new Logger("");
@@ -25,14 +25,14 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     private long totalFpsUpdateFrames;
     private double fpsUpdateDelay, totalFpsUpdateTime;
     private double fps, targetMillis;
-    private boolean running, paused, mousePressed;
+    private boolean paused, mousePressed;
     private Vector2i mouse, dm, offset;
 
     private Font defaultFont;
 
     public ClientThread(int width, int height) {
         logger.setName("Client").dbg("init start");
-        setBackground(Color.black);
+        setBackground(Color.white);
         setPreferredSize(new Dimension(width, height));
         setFocusable(true);
         requestFocus();
@@ -49,7 +49,6 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
 
-        running = true;
         paused = false;
         mousePressed = false;
 
@@ -76,14 +75,72 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "exit");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pause");
 
+        im.put(KeyStroke.getKeyStroke("pressed W"), "pw");
+        im.put(KeyStroke.getKeyStroke("released W"), "rw");
+        im.put(KeyStroke.getKeyStroke("pressed S"), "ps");
+        im.put(KeyStroke.getKeyStroke("released S"), "rs");
+        im.put(KeyStroke.getKeyStroke("pressed A"), "pa");
+        im.put(KeyStroke.getKeyStroke("released A"), "ra");
+        im.put(KeyStroke.getKeyStroke("pressed D"), "pd");
+        im.put(KeyStroke.getKeyStroke("released D"), "rd");
+
         am.put("exit", new AbstractAction() {
             public void actionPerformed(ActionEvent actionEvent) {
-                running = false;
+                shutdown();
             }
         });
         am.put("pause", new AbstractAction() {
             public void actionPerformed(ActionEvent actionEvent) {
                 paused ^= true;
+            }
+        });
+
+        am.put("pw", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(UP, true));
+            }
+        });
+        am.put("rw", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(UP, false));
+            }
+        });
+        am.put("ps", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(DOWN, true));
+            }
+        });
+        am.put("rs", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(DOWN, false));
+            }
+        });
+        am.put("pa", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(LEFT, true));
+            }
+        });
+        am.put("ra", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(LEFT, false));
+            }
+        });
+        am.put("pd", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(RIGHT, true));
+            }
+        });
+        am.put("rd", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                networkManager.send(new PlayerMovePacket(RIGHT, false));
             }
         });
     }
@@ -106,22 +163,20 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         g.setFont(defaultFont);
 
         g.drawString(String.format("FPS: %.0f", fps), 2, 11);
-        g.translate(offset.x, offset.y);
+        //g.translate(offset.x, offset.y);
 
-        g.drawString("Mouse: ",2,23);
-        g.drawString("x: " + mouse.x,2,35);
-        g.drawString("y: " + mouse.y,2,47);
-
-        g.transform(new AffineTransform(1, 0, 0, -1, 0, 0));
+        getWorld().draw(g);
     }
 
 
 
     public void run() {
         logger.out("thread start");
+
+        networkManager.startServerInstance();
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
-        while(running){
+        while(true){
             frameStart = System.nanoTime();
 
             update((double)(frameStart - lastFrameUpdate) / 1000000);
@@ -196,8 +251,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void shutdown(){
-        running = false;
-
+        logger.dbg("shutdown");
         try{
             networkManager.shutdown();
             world.getConnectionListener().shutdown();

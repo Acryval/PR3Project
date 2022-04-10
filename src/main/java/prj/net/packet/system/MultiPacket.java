@@ -1,6 +1,9 @@
-package prj.net.packet;
+package prj.net.packet.system;
 
-public class MultiPacket extends Packet{
+import prj.net.packet.Packet;
+import prj.net.packet.PacketType;
+
+public class MultiPacket extends Packet {
     @Override
     public PacketType getPacketType() {
         return PacketType.multiPacket;

@@ -13,14 +13,11 @@ public class ServerThread extends Thread {
     private final ServerNetworkManager networkManager;
     private double targetMillis;
 
-    private boolean running;
-
     public ServerThread(World localWorld, int listenerPort, int listenerBacklog) throws IOException {
         logger.setName("Server").dbg("init start");
 
         world = new World(localWorld, listenerPort, listenerBacklog, this);
         networkManager = new ServerNetworkManager(this);
-        running = true;
 
         targetMillis = 1000 / 60.0;
         logger.dbg("init end");
@@ -32,7 +29,7 @@ public class ServerThread extends Thread {
 
         long frameStart, lastFrameStart = System.nanoTime(), threadWait;
 
-        while(running){
+        while(true){
             frameStart = System.nanoTime();
 
             world.updateState((double)(frameStart - lastFrameStart)/1000000);
@@ -52,15 +49,6 @@ public class ServerThread extends Thread {
                 logger.err("interrupted: " + e.getMessage());
             }
         }
-
-        try {
-            networkManager.shutdown();
-            world.getConnectionListener().shutdown();
-        } catch (IOException e) {
-            logger.err("failed to shut down server connection listener");
-        }
-
-        logger.out("thread stop");
     }
 
     public ServerThread setTargetFPS(double target){
@@ -70,7 +58,16 @@ public class ServerThread extends Thread {
 
     public void shutdown(){
         logger.dbg("shutdown");
-        running = false;
+
+        try {
+            networkManager.shutdown();
+            world.getConnectionListener().shutdown();
+        } catch (IOException e) {
+            logger.err("failed to shut down server connection listener");
+        }
+
+        logger.out("thread stop");
+        System.exit(0);
     }
 
     public World getWorld() {

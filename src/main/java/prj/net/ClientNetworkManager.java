@@ -3,14 +3,15 @@ package prj.net;
 import prj.ClientThread;
 import prj.ServerThread;
 import prj.log.Logger;
-import prj.net.packet.LoginPacket;
-import prj.net.packet.LogoutPacket;
+import prj.net.packet.system.LoginPacket;
+import prj.net.packet.system.LogoutPacket;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketSender;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientNetworkManager {
     private final Logger logger = new Logger("");
@@ -32,13 +33,19 @@ public class ClientNetworkManager {
         logger.dbg("init end");
     }
 
-    public void send(Packet...packets){
+    public void send(List<Packet> packets){
         try {
-            logger.announcePackets(serverAddress, "sending packets", packets);
-            new PacketSender(new Socket(serverAddress.getHostName(), serverAddress.getPort()), clientInstance.getWorld(), packets).start();
+            if(packets.size() > 0) {
+                logger.announcePackets(serverAddress, "sending packets", packets);
+                new PacketSender(new Socket(serverAddress.getHostName(), serverAddress.getPort()), clientInstance.getWorld(), packets).start();
+            }
         }catch (IOException e){
             logger.err("failed to send packets to " + serverAddress + ": " + e.getMessage());
         }
+    }
+
+    public void send(Packet...packets){
+        send(List.of(packets));
     }
 
     public void startServerInstance(){
@@ -73,7 +80,7 @@ public class ClientNetworkManager {
     }
 
     public void shutdown(){
-        logger.dbg("shutdown");
+        logger.dbg("server shutdown");
         send(new LogoutPacket(clientInstance.getListenerAddress()));
 
         if(serverThread != null){

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Random;
 
 public class ConnectionListener extends Thread {
     private final Logger logger = new Logger("");
@@ -74,9 +73,5 @@ public class ConnectionListener extends Thread {
 
     public InetSocketAddress getListenerAddress(){
         return new InetSocketAddress(listenerSocket.getInetAddress(), listenerSocket.getLocalPort());
-    }
-
-    public static int getRandomPort(){
-        return new Random().nextInt(50000, 59999);
     }
 }

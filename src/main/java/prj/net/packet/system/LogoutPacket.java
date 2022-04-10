@@ -1,8 +1,11 @@
-package prj.net.packet;
+package prj.net.packet.system;
+
+import prj.net.packet.Packet;
+import prj.net.packet.PacketType;
 
 import java.net.InetSocketAddress;
 
-public class LogoutPacket extends Packet{
+public class LogoutPacket extends Packet {
     @Override
     public PacketType getPacketType() {
         return PacketType.logout;
