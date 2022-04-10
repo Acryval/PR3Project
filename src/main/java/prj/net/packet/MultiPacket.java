@@ -6,6 +6,11 @@ public class MultiPacket extends Packet{
         return PacketType.multiPacket;
     }
 
+    @Override
+    public String getPacketName() {
+        return super.getPacketName() + String.format("(%d packets)", numberOfPackets);
+    }
+
     private final int numberOfPackets;
 
     public MultiPacket(int numberOfPackets) {

@@ -2,6 +2,7 @@ package prj.net;
 
 import prj.ClientThread;
 import prj.ServerThread;
+import prj.log.Logger;
 import prj.net.packet.LoginPacket;
 import prj.net.packet.LogoutPacket;
 import prj.net.packet.Packet;
@@ -12,48 +13,67 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class ClientNetworkManager {
+    private final Logger logger = new Logger("");
     private final ClientThread clientInstance;
-    private final InetSocketAddress serverAddress;
+    private InetSocketAddress serverAddress;
     private ServerThread serverThread;
 
     public ClientNetworkManager(ClientThread clientInstance, InetSocketAddress serverAddress) {
+        logger.setName("Client network manager").dbg("init start, connected to " + serverAddress);
         this.clientInstance = clientInstance;
         this.serverAddress = serverAddress;
+        logger.dbg("init end");
     }
 
     public ClientNetworkManager(ClientThread clientInstance) {
+        logger.setName("Client network manager").dbg("init start, local server");
         this.clientInstance = clientInstance;
-        this.serverAddress = new InetSocketAddress("localhost", clientInstance.getWorld().getConnectionListener().getListenerAddress().getPort() + 1);
+        this.serverAddress = new InetSocketAddress("localhost", 0);
+        logger.dbg("init end");
     }
 
     public void send(Packet...packets){
         try {
+            logger.announcePackets(serverAddress, "sending packets", packets);
             new PacketSender(new Socket(serverAddress.getHostName(), serverAddress.getPort()), clientInstance.getWorld(), packets).start();
         }catch (IOException e){
-            System.err.println("Failed to send packets");
+            logger.err("failed to send packets to " + serverAddress + ": " + e.getMessage());
         }
     }
 
     public void startServerInstance(){
         if(serverThread != null){
-            System.out.println("Cannot have more than one server instace running");
+            logger.err("cannot have more than one server instace running");
             return;
         }
 
         if(!serverAddress.getHostName().equals("localhost")){
-            System.out.println("Cannot start a server instance on a remote address");
+            logger.err("cannot start a server instance on a remote address");
             return;
         }
 
         try {
             serverThread = new ServerThread(clientInstance.getWorld(), serverAddress.getPort(), 10);
+            serverAddress = serverThread.getListenerAddress();
+
+            serverThread.start();
+
             send(new LoginPacket(clientInstance.getListenerAddress()));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public InetSocketAddress getServerAddress() {
+        return serverAddress;
+    }
+
+    public ServerThread getServerThread() {
+        return serverThread;
+    }
+
     public void shutdown(){
+        logger.dbg("shutdown");
         send(new LogoutPacket(clientInstance.getListenerAddress()));
 
         if(serverThread != null){

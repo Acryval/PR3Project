@@ -18,7 +18,6 @@ public abstract class Packet implements Serializable {
             out.writeObject(p);
         }
         out.flush();
-        out.close();
     }
 
     public static void send(Socket session, Packet...data) throws IOException {
@@ -28,11 +27,14 @@ public abstract class Packet implements Serializable {
     public static Packet receive(Socket session) throws IOException, ClassNotFoundException {
         ObjectInputStream in = new ObjectInputStream(session.getInputStream());
         Object data = in.readObject();
-        in.close();
 
         if(data instanceof Packet packet){
             return packet;
         }
         return null;
+    }
+
+    public String getPacketName(){
+        return getPacketType().getPacketName();
     }
 }

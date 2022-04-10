@@ -1,12 +1,14 @@
 package prj;
 
+import prj.log.Logger;
 import prj.net.ServerNetworkManager;
 import prj.world.World;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class ServerThread extends Thread{
+public class ServerThread extends Thread {
+    private final Logger logger = new Logger("");
     private final World world;
     private final ServerNetworkManager networkManager;
     private double targetMillis;
@@ -14,18 +16,21 @@ public class ServerThread extends Thread{
     private boolean running;
 
     public ServerThread(World localWorld, int listenerPort, int listenerBacklog) throws IOException {
+        logger.setName("Server").dbg("init start");
+
         world = new World(localWorld, listenerPort, listenerBacklog, this);
         networkManager = new ServerNetworkManager(this);
         running = true;
 
         targetMillis = 1000 / 60.0;
+        logger.dbg("init end");
     }
 
     @Override
     public void run() {
-        long frameStart, lastFrameStart = System.nanoTime(), threadWait;
+        logger.dbg("thread start");
 
-        world.getConnectionListener().start();
+        long frameStart, lastFrameStart = System.nanoTime(), threadWait;
 
         while(running){
             frameStart = System.nanoTime();
@@ -37,14 +42,14 @@ public class ServerThread extends Thread{
             threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
 
             if(threadWait < 0){
-                System.out.printf("[Server] Lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis);
+                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
                 threadWait = 0;
             }
 
             try{
                 Thread.sleep(threadWait);
             }catch (InterruptedException e){
-                e.printStackTrace();
+                logger.err("interrupted: " + e.getMessage());
             }
         }
 
@@ -52,8 +57,10 @@ public class ServerThread extends Thread{
             networkManager.shutdown();
             world.getConnectionListener().shutdown();
         } catch (IOException e) {
-            System.err.println("Failed to shut down server connection listener");
+            logger.err("failed to shut down server connection listener");
         }
+
+        logger.dbg("thread stop");
     }
 
     public ServerThread setTargetFPS(double target){
@@ -62,6 +69,7 @@ public class ServerThread extends Thread{
     }
 
     public void shutdown(){
+        logger.dbg("shutdown");
         running = false;
     }
 

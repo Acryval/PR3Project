@@ -1,6 +1,7 @@
 package prj;
 
 import org.joml.Vector2i;
+import prj.log.Logger;
 import prj.net.ClientNetworkManager;
 import prj.world.World;
 
@@ -8,10 +9,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 
 public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {
+    private final Logger logger = new Logger("");
     private World world;
     private ClientNetworkManager networkManager;
 
@@ -27,6 +28,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     private Font defaultFont;
 
     public ClientThread(int width, int height) {
+        logger.setName("Client").dbg("init start");
         setBackground(Color.black);
         setPreferredSize(new Dimension(width, height));
         setFocusable(true);
@@ -37,6 +39,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
 
         initValues();
         loadActions();
+        logger.dbg("init end");
     }
 
     public void initValues(){
@@ -107,6 +110,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void run() {
+        logger.dbg("thread start");
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
         while(running){
@@ -120,14 +124,14 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
             threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
 
             if(threadWait < 0){
-                System.out.printf("[Client] Lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis);
+                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
                 threadWait = 0;
             }
 
             try{
                 Thread.sleep(threadWait);
             }catch (InterruptedException e){
-                e.printStackTrace();
+                logger.err("interrupted: " + e.getMessage());
             }
         }
 
@@ -135,9 +139,10 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
             networkManager.shutdown();
             world.getConnectionListener().shutdown();
         }catch (IOException e){
-            System.err.println("Failed to shut down client connection listener");
+            logger.err("Failed to shut down client connection listener");
         }*/
 
+        logger.dbg("thread stop");
         System.exit(0);
     }
 

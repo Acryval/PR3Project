@@ -8,6 +8,11 @@ public class LoginPacket extends Packet{
         return PacketType.login;
     }
 
+    @Override
+    public String getPacketName() {
+        return super.getPacketName() + String.format("(%s)", clientAddress);
+    }
+
     private final InetSocketAddress clientAddress;
 
     public LoginPacket(InetSocketAddress clientAddress) {

@@ -1,6 +1,7 @@
 package prj.net;
 
 import prj.ServerThread;
+import prj.log.Logger;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketSender;
 import prj.net.packet.ServerShutdownPacket;
@@ -11,38 +12,47 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerNetworkManager{
+public class ServerNetworkManager {
+    private final Logger logger = new Logger("");
     private final ServerThread serverInstance;
     private final List<InetSocketAddress> clientAddresses;
 
     public ServerNetworkManager(ServerThread serverInstance) {
+        logger.setName("Server network manager").dbg("init start");
         this.serverInstance = serverInstance;
         this.clientAddresses = new ArrayList<>();
+        logger.dbg("init end");
     }
 
-    public void send(InetSocketAddress clientAddress, Packet...packets){
+    public synchronized void send(InetSocketAddress clientAddress, Packet...packets){
         try {
+            logger.announcePackets(clientAddress, "sending packets", packets);
             new PacketSender(new Socket(clientAddress.getHostName(), clientAddress.getPort()), serverInstance.getWorld(), packets).start();
         }catch (IOException e){
-            System.out.println("Failed to send packets");
+            logger.warn("failed to send packets to " + clientAddress + ": " + e.getMessage());
         }
     }
 
-    public void broadcast(Packet...packets){
+    public synchronized void broadcast(Packet...packets){
         for(InetSocketAddress clientAddress : clientAddresses){
             send(clientAddress, packets);
         }
     }
 
-    public void clientLogin(InetSocketAddress client){
-        if(!clientAddresses.contains(client)) clientAddresses.add(client);
+    public synchronized int getActiveClients(){
+        return clientAddresses.size();
     }
 
-    public void clientLogout(InetSocketAddress client){
+    public synchronized void clientLogin(InetSocketAddress client){
+        if (!clientAddresses.contains(client)) clientAddresses.add(client);
+    }
+
+    public synchronized void clientLogout(InetSocketAddress client){
         clientAddresses.remove(client);
     }
 
     public void shutdown(){
+        logger.dbg("shutdown");
         broadcast(new ServerShutdownPacket());
     }
 }
