@@ -69,6 +69,8 @@ public class Logger {
         log(LogType.DEBUG, s);
     }
 
+    public void testinfo(String s){log(LogType.TEST, s);}
+
     public void announcePackets(InetSocketAddress address, String prefix, List<Packet> packets){
         StringBuilder s = new StringBuilder(prefix).append(" {");
 

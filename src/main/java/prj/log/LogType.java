@@ -5,7 +5,8 @@ public enum LogType {
     PACKET("PACK"),
     WARNING("WARN"),
     ERROR("ERR"),
-    DEBUG("DEBG");
+    DEBUG("DEBG"),
+    TEST("TEST");
 
     public final String name;
 

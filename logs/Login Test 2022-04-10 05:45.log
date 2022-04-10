@@ -1,0 +1,60 @@
+LOG Start @ Sunday, April 10, 2022 at 5:45:41 AM Central European Summer Time
+
+05:45:41 [TEST]:Test thread - begin login test
+05:45:41 [TEST]:Test thread - initialize world
+05:45:41 [DEBG]:Client world - init start
+05:45:41 [DEBG]:Client connection listener - init start
+05:45:41 [DEBG]:Client connection listener - listening for connections at 0.0.0.0/0.0.0.0:29963
+05:45:41 [DEBG]:Client connection listener - init end
+05:45:41 [DEBG]:Client world - init end
+05:45:41 [DEBG]:Client connection listener - thread start
+05:45:41 [TEST]:Test thread - initialize ClientNetworkManager
+05:45:41 [DEBG]:Client network manager - init start, local server
+05:45:41 [DEBG]:Client network manager - init end
+05:45:41 [TEST]:Test thread - start server instance
+05:45:41 [DEBG]:Server - init start
+05:45:41 [DEBG]:Server world - init start
+05:45:41 [DEBG]:Server connection listener - init start
+05:45:41 [DEBG]:Server connection listener - listening for connections at 0.0.0.0/0.0.0.0:21943
+05:45:41 [DEBG]:Server connection listener - init end
+05:45:41 [DEBG]:Server world - init end
+05:45:41 [DEBG]:Server connection listener - thread start
+05:45:41 [DEBG]:Server network manager - init start
+05:45:41 [DEBG]:Server network manager - init end
+05:45:41 [DEBG]:Server - init end
+05:45:41 [DEBG]:Server - thread start
+05:45:41 [PACK]:Client network manager - sending packets {login(0.0.0.0/0.0.0.0:29963)} to 0.0.0.0/0.0.0.0:21943
+05:45:41 [DEBG]:Server connection listener - connection from: /127.0.0.1
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - session started
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - session started
+05:45:41 [PACK]:Server packet receiver [/127.0.0.1] - received {login(0.0.0.0/0.0.0.0:29963)}
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - LOGIN 0.0.0.0/0.0.0.0:29963
+05:45:41 [PACK]:Server packet receiver [/127.0.0.1] - sending responses {getWorldState}
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - awaiting 1 packets
+05:45:41 [PACK]:Client packet sender [acryval-ms7918/127.0.1.1] - (1/1) {getWorldState}
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - session socket closed
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - session socket closed
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - session sended
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - session sended
+05:45:41 [TEST]:Test thread - shutdown ClientNetworkManager
+05:45:41 [DEBG]:Client network manager - shutdown
+05:45:41 [PACK]:Client network manager - sending packets {logout} to 0.0.0.0/0.0.0.0:21943
+05:45:41 [DEBG]:Server connection listener - connection from: /127.0.0.1
+05:45:41 [DEBG]:Server - shutdown
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - session started
+05:45:41 [TEST]:Test thread - shutdown world
+05:45:41 [DEBG]:Client connection listener - shutdown
+05:45:41 [TEST]:Test thread - login test completed
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - session started
+05:45:41 [DEBG]:Client connection listener - thread stop
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - awaiting 0 packets
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - session socket closed
+05:45:41 [DEBG]:Client packet sender [acryval-ms7918/127.0.1.1] - session sended
+05:45:41 [PACK]:Server packet receiver [/127.0.0.1] - received {logout}
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - LOGOUT 0.0.0.0/0.0.0.0:29963
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - session socket closed
+05:45:41 [DEBG]:Server packet receiver [/127.0.0.1] - session sended
+05:45:41 [DEBG]:Server network manager - shutdown
+05:45:41 [DEBG]:Server connection listener - shutdown
+05:45:41 [DEBG]:Server - thread stop
+05:45:41 [DEBG]:Server connection listener - thread stop
