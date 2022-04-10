@@ -1,0 +1,19 @@
+package com.company;
+
+public class User {
+    String login;
+    String password;
+
+    public User(String login, String password){
+        this.login = login;
+        this.password = password;
+    }
+
+    public String getLogin(){
+        return this.login;
+    }
+
+    public String getPassword(){
+        return this.password;
+    }
+}
