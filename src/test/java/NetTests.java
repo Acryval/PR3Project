@@ -48,7 +48,7 @@ public class NetTests {
         Assertions.assertEquals(1, cnm.getServerThread().getNetworkManager().getActiveClients());
 
         logger.testinfo("shutdown ClientNetworkManager");
-        cnm.shutdown();
+        cnm.disconnect();
 
         logger.testinfo("shutdown world");
         w.getConnectionListener().shutdown();

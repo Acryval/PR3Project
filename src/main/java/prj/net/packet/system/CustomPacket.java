@@ -26,7 +26,7 @@ public class CustomPacket extends Packet {
     }
 
     private void pack(Packable p, String namePrefix){
-        for(Field f : p.getClass().getFields()){
+        for(Field f : p.getClass().getDeclaredFields()){
             if(f.isAnnotationPresent(PacketElement.class)){
                 f.setAccessible(true);
                 String name = namePrefix + f.getName();
@@ -45,22 +45,13 @@ public class CustomPacket extends Packet {
     }
 
     private void unpack(Packable p, String namePrefix){
-        for(Field f : p.getClass().getFields()){
+        for(Field f : p.getClass().getDeclaredFields()){
             if(f.isAnnotationPresent(PacketElement.class)){
                 f.setAccessible(true);
                 String name = namePrefix + f.getName();
 
-                boolean complexObj = false;
-
-                for(Map.Entry<String, Serializable> e : customData.entrySet()){
-                    if(e.getKey().startsWith(name + ".")){
-                        complexObj = true;
-                        break;
-                    }
-                }
-
                 try {
-                    if(complexObj){
+                    if(Packable.class.isAssignableFrom(f.getType())){
                         Packable pp = (Packable) f.getType().getConstructor().newInstance();
                         unpack(pp, name + ".");
                         f.set(p, pp);

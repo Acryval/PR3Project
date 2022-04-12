@@ -25,7 +25,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     private long totalFpsUpdateFrames;
     private double fpsUpdateDelay, totalFpsUpdateTime;
     private double fps, targetMillis;
-    private boolean paused, mousePressed;
+    private boolean paused, mousePressed, running;
     private Vector2i mouse, dm, offset;
 
     private Font defaultFont;
@@ -51,6 +51,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
 
         paused = false;
         mousePressed = false;
+        running = true;
 
         fps = 60;
         fpsUpdateDelay = 200;
@@ -72,7 +73,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void loadActions(){
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "exit");
+        im.put(KeyStroke.getKeyStroke("pressed ESCAPE"), "exit");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pause");
 
         im.put(KeyStroke.getKeyStroke("pressed W"), "pw");
@@ -176,7 +177,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         networkManager.startServerInstance();
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
-        while(true){
+        while(running){
             frameStart = System.nanoTime();
 
             update((double)(frameStart - lastFrameUpdate) / 1000000);
@@ -187,7 +188,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
             threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
 
             if(threadWait < 0){
-                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
+                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS )", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
                 threadWait = 0;
             }
 
@@ -197,6 +198,15 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
                 logger.err("interrupted: " + e.getMessage());
             }
         }
+
+        try{
+            networkManager.disconnect();
+            world.getConnectionListener().shutdown();
+            Thread.sleep(100);
+        }catch (IOException | InterruptedException e){
+            logger.err("Failed to shut down client connection listener");
+        }
+        logger.out("thread stop");
     }
 
     @Override
@@ -252,13 +262,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
 
     public void shutdown(){
         logger.dbg("shutdown");
-        try{
-            networkManager.shutdown();
-            world.getConnectionListener().shutdown();
-        }catch (IOException e){
-            logger.err("Failed to shut down client connection listener");
-        }
-        logger.out("thread stop");
+        running = false;
     }
 
     @Override

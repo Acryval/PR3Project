@@ -12,12 +12,14 @@ public class ServerThread extends Thread {
     private final World world;
     private final ServerNetworkManager networkManager;
     private double targetMillis;
+    private boolean running;
 
     public ServerThread(World localWorld, int listenerPort, int listenerBacklog) throws IOException {
         logger.setName("Server").dbg("init start");
 
         world = new World(localWorld, listenerPort, listenerBacklog, this);
         networkManager = new ServerNetworkManager(this);
+        running = true;
 
         targetMillis = 1000 / 60.0;
         logger.dbg("init end");
@@ -29,7 +31,7 @@ public class ServerThread extends Thread {
 
         long frameStart, lastFrameStart = System.nanoTime(), threadWait;
 
-        while(true){
+        while(running){
             frameStart = System.nanoTime();
 
             world.updateState((double)(frameStart - lastFrameStart)/1000000);
@@ -39,7 +41,7 @@ public class ServerThread extends Thread {
             threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
 
             if(threadWait < 0){
-                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS ) %n", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
+                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS )", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
                 threadWait = 0;
             }
 
@@ -49,15 +51,6 @@ public class ServerThread extends Thread {
                 logger.err("interrupted: " + e.getMessage());
             }
         }
-    }
-
-    public ServerThread setTargetFPS(double target){
-        this.targetMillis = 1000 / target;
-        return this;
-    }
-
-    public void shutdown(){
-        logger.dbg("shutdown");
 
         try {
             networkManager.shutdown();
@@ -67,7 +60,16 @@ public class ServerThread extends Thread {
         }
 
         logger.out("thread stop");
-        System.exit(0);
+    }
+
+    public ServerThread setTargetFPS(double target){
+        this.targetMillis = 1000 / target;
+        return this;
+    }
+
+    public void shutdown(){
+        logger.dbg("shutdown");
+        running = false;
     }
 
     public World getWorld() {

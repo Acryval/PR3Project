@@ -38,7 +38,6 @@ public class Prj extends JFrame{
                 cth.shutdown();
             }
         });
-        cth.run();
     }
 
     public static void setupLogfile(String filename){
@@ -51,6 +50,10 @@ public class Prj extends JFrame{
         }
     }
 
+    public void run(){
+        cth.run();
+    }
+
     public static void main(String[] args) {
         for(String arg : args){
             if(arg.contains("-d")){
@@ -58,6 +61,8 @@ public class Prj extends JFrame{
             }
         }
 
-        new Prj("PR3 Project Window", 1200, 700);
+        new Prj("PR3 Project Window", 1200, 700).run();
+
+        System.exit(0);
     }
 }

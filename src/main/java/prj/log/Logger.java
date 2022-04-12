@@ -37,7 +37,7 @@ public class Logger {
                 System.out.println(msg);
             }
         }else{
-            if(type != LogType.DEBUG || Prj.DEBUG) {
+            if(Prj.DEBUG || !(type == LogType.DEBUG || type == LogType.PACKET)) {
                 try {
                     FileWriter w = new FileWriter(Prj.LOGFILE, true);
                     w.append(msg).append(System.lineSeparator());

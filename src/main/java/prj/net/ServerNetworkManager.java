@@ -16,6 +16,7 @@ public class ServerNetworkManager {
     private final Logger logger = new Logger("");
     private final ServerThread serverInstance;
     private final List<InetSocketAddress> clientAddresses;
+    private boolean stopped;
 
     public ServerNetworkManager(ServerThread serverInstance) {
         logger.setName("Server network manager").dbg("init start");
@@ -54,17 +55,24 @@ public class ServerNetworkManager {
     }
 
     public synchronized void clientLogin(InetSocketAddress client){
-        logger.dbg("LOGIN " + client);
+        logger.out("LOGIN " + client);
         if (!clientAddresses.contains(client)) clientAddresses.add(client);
     }
 
     public synchronized void clientLogout(InetSocketAddress client){
-        logger.dbg("LOGOUT " + client);
+        logger.out("LOGOUT " + client);
         clientAddresses.remove(client);
     }
 
     public void shutdown(){
         logger.dbg("shutdown");
-        broadcast(new ServerShutdownPacket());
+        for(int i = 1; i < clientAddresses.size(); i++){
+            send(clientAddresses.get(i), new ServerShutdownPacket());
+        }
+        stopped = true;
+    }
+
+    public boolean isStopped(){
+        return stopped;
     }
 }
