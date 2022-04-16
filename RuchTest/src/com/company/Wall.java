@@ -1,6 +1,7 @@
 package com.company;
 
 import java.awt.*;
+import java.util.Random;
 
 public class Wall {
 
@@ -8,13 +9,19 @@ public class Wall {
     int y;
     int width;
     int height;
+    int durability;
+    boolean isBreakable;
+    boolean isCollision;
     Rectangle hitbox;
 
-    public Wall(int x, int y, int width, int height) {
+    public Wall(int x, int y, int width, int height, int durabilty, boolean isBreakable, boolean isCollision) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.durability = durability;
+        this.isBreakable = isBreakable;
+        this.isCollision = isCollision;
         hitbox = new Rectangle(x, y, width, height);
     }
 

@@ -2,6 +2,7 @@ package com.company;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 
 public class Player {
 
@@ -34,6 +35,8 @@ public class Player {
         this.height = 100;
         hitbox = new Rectangle(this.x, this.y, this.width, this.height);
         loadImage();
+
+        int[] itemBar = new int[10];
     }
 
     private void loadImage() {
@@ -59,8 +62,8 @@ public class Player {
 
         if(keyUp) {
             hitbox.y++;
-            for(Wall wall : panel.walls) {
-                if(wall.hitbox.intersects(hitbox)) {
+            for(Map.Entry<Point, Wall> wall : panel.wallsByCords.entrySet()) {
+                if(wall.getValue().hitbox.intersects(hitbox)) {
                     velocityY = -6;
                 }
             }
@@ -69,10 +72,10 @@ public class Player {
         velocityY += 0.3;
 
         hitbox.x += velocityX;
-        for(Wall wall : panel.walls) {
-            if(hitbox.intersects(wall.hitbox)) {
+        for(Map.Entry<Point, Wall> wall : panel.wallsByCords.entrySet()) {
+            if(hitbox.intersects(wall.getValue().hitbox)) {
                 hitbox.x -= velocityX;
-                while(!wall.hitbox.intersects(hitbox)) {
+                while(!wall.getValue().hitbox.intersects(hitbox)) {
                     hitbox.x += Math.signum(velocityX);
                 }
                 hitbox.x -= Math.signum(velocityX);
@@ -82,10 +85,10 @@ public class Player {
         }
 
         hitbox.y += velocityY;
-        for(Wall wall : panel.walls) {
-            if(hitbox.intersects(wall.hitbox)) {
+        for(Map.Entry<Point, Wall> wall : panel.wallsByCords.entrySet()) {
+            if(hitbox.intersects(wall.getValue().hitbox)) {
                 hitbox.y -= velocityY;
-                while(!wall.hitbox.intersects(hitbox)) {
+                while(!wall.getValue().hitbox.intersects(hitbox)) {
                     hitbox.y += Math.signum(velocityY);
                 }
                 hitbox.y -= Math.signum(velocityY);
