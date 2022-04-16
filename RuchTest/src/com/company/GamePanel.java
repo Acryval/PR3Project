@@ -12,7 +12,7 @@ import java.util.Timer;
 public class GamePanel extends JPanel implements ActionListener {
 
     private Player player;
-    ArrayList<Wall> walls = new ArrayList<>();
+    //ArrayList<Wall> walls = new ArrayList<>();
     HashMap<Point, Wall> wallsByCords = new HashMap<>();
     Timer timer;
 
@@ -36,39 +36,21 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void makeWalls() {
-        for(int i = -50 ; i < 650 ; i += 50) {
-            walls.add(new Wall(i, 600, 50, 50, 100, true, true));
-            wallsByCords.put(new Point(i, 600), walls.get(walls.size() - 1));
+        for(int i = -500 ; i < 1300 ; i += 50) {
+            for(int j = -500 ; j < 1100 ; j += 50) {
+                wallsByCords.put(new Point(i, j), new Wall(i, j, 50, 50, 100, false, false, this));
+            }
         }
-        walls.add(new Wall(700, 550, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(700, 550), walls.get(walls.size() - 1));
+        for(int i = -50 ; i < 800 ; i += 50) {
+            wallsByCords.put(new Point(i, 600), new Wall(i, 600, 50, 50, 100, true, true, this));
+        }
+        wallsByCords.put(new Point(0, 550), new Wall(0, 550, 50, 50, 100, true, true, this));
+        wallsByCords.put(new Point(-50, 500), new Wall(-50, 500, 50, 50, 100, true, true, this));
+        wallsByCords.put(new Point(-100, 450), new Wall(-100, 450, 50, 50, 100, true, true, this));
+        wallsByCords.put(new Point(-150, 400), new Wall(-150, 400, 50, 50, 100, true, true, this));
 
-        walls.add(new Wall(750, 500, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(750, 500), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(800, 450, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(800, 450), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(850, 400, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(850, 400), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(600, 350, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(600, 350), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(550, 350, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(550, 350), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(300, 350, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(300, 350), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(250, 350, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(250, 350), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(200, 350, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(200, 350), walls.get(walls.size() - 1));
-
-        walls.add(new Wall(150, 350, 50, 50, 100, true, true));
-        wallsByCords.put(new Point(150, 350), walls.get(walls.size() - 1));
+        wallsByCords.put(new Point(200, 550), new Wall(200, 550, 50, 50, 100, true, true, this));
+        wallsByCords.put(new Point(250, 550), new Wall(250, 550, 50, 50, 100, true, true, this));
     }
 
     public void paint(Graphics g) {
@@ -143,9 +125,9 @@ public class GamePanel extends JPanel implements ActionListener {
 
         if(wallsByCords.get(cellCords).isBreakable) {
             System.out.println("{" + cellCordsX + "," + cellCordsY + " durability: " + wallsByCords.get(cellCords).durability + "}");
-            wallsByCords.get(cellCords).durability -= 5;
+            wallsByCords.get(cellCords).durability -= 10;
             if(wallsByCords.get(cellCords).durability <= 0) {
-                wallsByCords.remove(cellCords);
+                wallsByCords.put(new Point(cellCordsX, cellCordsY), new Wall(cellCordsX, cellCordsY, 50, 50, 100, false, false, this));
             }
         }
     }

@@ -63,7 +63,7 @@ public class Player {
         if(keyUp) {
             hitbox.y++;
             for(Map.Entry<Point, Wall> wall : panel.wallsByCords.entrySet()) {
-                if(wall.getValue().hitbox.intersects(hitbox)) {
+                if(wall.getValue().hitbox.intersects(hitbox) && wall.getValue().isCollision) {
                     velocityY = -6;
                 }
             }
@@ -73,7 +73,7 @@ public class Player {
 
         hitbox.x += velocityX;
         for(Map.Entry<Point, Wall> wall : panel.wallsByCords.entrySet()) {
-            if(hitbox.intersects(wall.getValue().hitbox)) {
+            if(hitbox.intersects(wall.getValue().hitbox) && wall.getValue().isCollision) {
                 hitbox.x -= velocityX;
                 while(!wall.getValue().hitbox.intersects(hitbox)) {
                     hitbox.x += Math.signum(velocityX);
@@ -86,7 +86,7 @@ public class Player {
 
         hitbox.y += velocityY;
         for(Map.Entry<Point, Wall> wall : panel.wallsByCords.entrySet()) {
-            if(hitbox.intersects(wall.getValue().hitbox)) {
+            if(hitbox.intersects(wall.getValue().hitbox) && wall.getValue().isCollision) {
                 hitbox.y -= velocityY;
                 while(!wall.getValue().hitbox.intersects(hitbox)) {
                     hitbox.y += Math.signum(velocityY);
