@@ -12,6 +12,7 @@ import java.util.Timer;
 public class GamePanel extends JPanel implements ActionListener {
 
     private Player player;
+    private MouseCursor mouseCursor;
     //ArrayList<Wall> walls = new ArrayList<>();
     HashMap<Point, Wall> wallsByCords = new HashMap<>();
     Timer timer;
@@ -21,7 +22,9 @@ public class GamePanel extends JPanel implements ActionListener {
         this.setBackground(Color.LIGHT_GRAY);
         this.setVisible(true);
 
-        player = new Player((1400 - 50)/ 2, (900 - 100)/ 2, this);
+        ItemBar itemBar = new ItemBar(10, 10, 10, 50, 50, 10, 0);
+
+        player = new Player((1400 - 50)/ 2, (900 - 100)/ 2, this, itemBar);
         makeWalls();
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -61,6 +64,7 @@ public class GamePanel extends JPanel implements ActionListener {
         for(Map.Entry<Point, Wall> wall : wallsByCords.entrySet()) {
             wall.getValue().draw(g2d);
         }
+        mouseCursor.draw(g2d);
     }
 
     public void keyPressed(KeyEvent e) {
@@ -70,11 +74,17 @@ public class GamePanel extends JPanel implements ActionListener {
         if(e.getKeyChar() == 'd') {
             player.keyRight = true;
         }
-        if(e.getKeyChar() == 's') {
-            player.keyDown = true;
-        }
         if(e.getKeyChar() == ' ') {
             player.keyUp = true;
+        }
+
+        if(e.getKeyChar() >= '0' && e.getKeyChar() <= '9') {
+            if(e.getKeyChar() == '0') {
+                player.itemBar.inHandItemIndex = 9;
+            }
+            else {
+                player.itemBar.inHandItemIndex = e.getKeyChar() - 48 - 1;
+            }
         }
     }
 
@@ -84,9 +94,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
         if(e.getKeyChar() == 'd') {
             player.keyRight = false;
-        }
-        if(e.getKeyChar() == 's') {
-            player.keyDown = false;
         }
         if(e.getKeyChar() == ' ') {
             player.keyUp = false;
@@ -123,12 +130,43 @@ public class GamePanel extends JPanel implements ActionListener {
         //System.out.println("{" + cellCordsX + "," + cellCordsY + "}");
         Point cellCords = new Point(cellCordsX, cellCordsY);
 
-        if(wallsByCords.get(cellCords).isBreakable) {
+        if(wallsByCords.get(cellCords).isBreakable && Math.sqrt((cursorOnMapX - player.x) * (cursorOnMapX - player.x) + (cursorOnMapY - player.y) * (cursorOnMapY - player.y)) <= 300) {
             System.out.println("{" + cellCordsX + "," + cellCordsY + " durability: " + wallsByCords.get(cellCords).durability + "}");
             wallsByCords.get(cellCords).durability -= 10;
             if(wallsByCords.get(cellCords).durability <= 0) {
                 wallsByCords.put(new Point(cellCordsX, cellCordsY), new Wall(cellCordsX, cellCordsY, 50, 50, 100, false, false, this));
             }
+        }
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        int cursorOnMapX, cursorOnMapY;
+
+        cursorOnMapX = (e.getX() - 8) + player.x  - player.startingPosX;
+        cursorOnMapY = (e.getY() - 31) + player.y  - player.startingPosY;
+
+        int cellCordsX, cellCordsY;
+        if(cursorOnMapX >= 0) {
+            cellCordsX = cursorOnMapX - cursorOnMapX % 50;
+        }
+        else {
+            cellCordsX = cursorOnMapX - (50 + cursorOnMapX % 50);
+        }
+
+        if(cursorOnMapY >= 0) {
+            cellCordsY = cursorOnMapY - cursorOnMapY % 50;
+        }
+        else {
+            cellCordsY = cursorOnMapY - (50 + cursorOnMapY % 50);
+        }
+        Point cellCords = new Point(cellCordsX, cellCordsY);
+
+        if(Math.sqrt((cursorOnMapX - player.x) * (cursorOnMapX - player.x) + (cursorOnMapY - player.y) * (cursorOnMapY - player.y)) <= 300
+        && wallsByCords.get(cellCords).isBreakable) {
+            mouseCursor = new MouseCursor(cursorOnMapX, cursorOnMapY, 20, 20, true);
+        }
+        else {
+            mouseCursor = new MouseCursor(cursorOnMapX, cursorOnMapY, 20, 20, false);
         }
     }
 

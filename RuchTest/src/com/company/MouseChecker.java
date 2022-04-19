@@ -17,4 +17,9 @@ public class MouseChecker extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
         panel.mousePressed(e);
     }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        panel.mouseMoved(e);
+    }
 }

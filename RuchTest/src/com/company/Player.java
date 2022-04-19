@@ -19,11 +19,11 @@ public class Player {
     Rectangle hitbox;
     public boolean keyLeft;
     public boolean keyRight;
-    public boolean keyDown;
     public boolean keyUp;
     private Image image;
+    ItemBar itemBar;
 
-    public Player(int x, int y, GamePanel panel) {
+    public Player(int x, int y, GamePanel panel, ItemBar itemBar) {
         this.x = x;
         this.y = y;
         this.startingPosX = x;
@@ -35,8 +35,7 @@ public class Player {
         this.height = 100;
         hitbox = new Rectangle(this.x, this.y, this.width, this.height);
         loadImage();
-
-        int[] itemBar = new int[10];
+        this.itemBar = itemBar;
     }
 
     private void loadImage() {
@@ -102,11 +101,15 @@ public class Player {
 
         hitbox.x = x;
         hitbox.y = y;
+
+        itemBar.x = x - startingPosX + 10;
+        itemBar.y = y - startingPosY + 10;
     }
 
     public void draw(Graphics2D g2d) {
         //g2d.setColor(Color.BLACK);
         //g2d.fillRect(x, y, width, height);
         g2d.drawImage(image, x, y, panel);
+        itemBar.draw(g2d);
     }
 }
