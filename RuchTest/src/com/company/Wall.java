@@ -6,16 +6,16 @@ import java.util.ArrayList;
 
 public class Wall {
 
-    int x;
-    int y;
-    int width;
-    int height;
-    int durability;
-    boolean isBreakable;
-    boolean isCollision;
-    Rectangle hitbox;
-    ArrayList<Image> image = new ArrayList<>();
-    GamePanel panel;
+    private int x;
+    private int y;
+    private int width;
+    private int height;
+    private int durability;
+    private boolean isBreakable;
+    private boolean isCollision;
+    private Rectangle hitbox;
+    private ArrayList<Image> image = new ArrayList<>();
+    private GamePanel panel;
 
     public Wall(int x, int y, int width, int height, int durability, boolean isBreakable, boolean isCollision, GamePanel panel) {
         this.x = x;
@@ -29,6 +29,88 @@ public class Wall {
         this.panel = panel;
         loadImage();
     }
+
+    /* Settery i gettery */
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getDurability() {
+        return durability;
+    }
+
+    public void setDurability(int durability) {
+        this.durability = durability;
+    }
+
+    public boolean isBreakable() {
+        return isBreakable;
+    }
+
+    public void setBreakable(boolean breakable) {
+        isBreakable = breakable;
+    }
+
+    public boolean isCollision() {
+        return isCollision;
+    }
+
+    public void setCollision(boolean collision) {
+        isCollision = collision;
+    }
+
+    public Rectangle getHitbox() {
+        return hitbox;
+    }
+
+    public void setHitbox(Rectangle hitbox) {
+        this.hitbox = hitbox;
+    }
+
+    public ArrayList<Image> getImage() {
+        return image;
+    }
+
+    public void setImage(ArrayList<Image> image) {
+        this.image = image;
+    }
+
+    public GamePanel getPanel() {
+        return panel;
+    }
+
+    public void setPanel(GamePanel panel) {
+        this.panel = panel;
+    }
+    /* ****** */
 
     private void loadImage() {
         ImageIcon ii = new ImageIcon("BlockPrototype.png");

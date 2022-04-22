@@ -5,9 +5,7 @@ import java.awt.event.MouseEvent;
 
 public class MouseChecker extends MouseAdapter {
 
-    GamePanel panel;
-    int x;
-    int y;
+    private GamePanel panel;
 
     public MouseChecker(GamePanel panel) {
         this.panel = panel;
@@ -20,6 +18,11 @@ public class MouseChecker extends MouseAdapter {
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        panel.mouseMoved(e);
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
         panel.mouseMoved(e);
     }
 }
