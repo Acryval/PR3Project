@@ -5,7 +5,7 @@ import prj.net.packet.Packet;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,8 +23,14 @@ public class Logger {
         return this;
     }
 
+    public static String getFormattedMsg(LogType type, String name, String msg){
+        return String.format("%s [%s]:%s - %s", dateFormatter.format(new Date()), type.name, name, msg);
+    }
+
     public void log(LogType type, String s){
-        String msg = String.format("%s [%s]:%s - %s", dateFormatter.format(new Date()), type.name, name, s);
+        if(Prj.LOGFILE == null) return;
+
+        String msg = getFormattedMsg(type, name, s);
 
         if(Prj.LOGFILE == null){
             if(type == LogType.DEBUG){
@@ -68,20 +74,21 @@ public class Logger {
 
     public void testinfo(String s){log(LogType.TEST, s);}
 
-    public void announcePackets(InetSocketAddress address, String prefix, List<Packet> packets){
+    public void announcePackets(InetAddress address, String prefix, List<Packet> packets){
+        if(Prj.LOGFILE == null) return;
         StringBuilder s = new StringBuilder(prefix).append(" {");
 
         if(packets != null){
             if(packets.size() == 1){
-                s.append(packets.get(0).getPacketName());
+                s.append(packets.get(0).getName());
             }else {
                 for (Packet p : packets) {
-                    s.append("\n\t").append(p.getPacketName());
+                    s.append("\n\t").append(p.getName());
                 }
                 s.append("\n");
             }
         }else{
-            s.append("[CORRUPTED]");
+            s.append("[INVALID]");
         }
 
         s.append("}");
@@ -93,7 +100,7 @@ public class Logger {
         log(LogType.PACKET, s.toString());
     }
 
-    public void announcePackets(InetSocketAddress address, String prefix, Packet... packets){
+    public void announcePackets(InetAddress address, String prefix, Packet... packets){
         announcePackets(address, prefix, List.of(packets));
     }
 }

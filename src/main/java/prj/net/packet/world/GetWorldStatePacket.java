@@ -4,12 +4,8 @@ import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
 
 public class GetWorldStatePacket extends Packet {
-    @Override
-    public PacketType getPacketType() {
-        return PacketType.getWorldState;
-    }
-
     public GetWorldStatePacket() {
-        expectedReturnPackets.add(PacketType.worldState);
+        super(PacketType.getWorldState);
+        expect(PacketType.worldState);
     }
 }

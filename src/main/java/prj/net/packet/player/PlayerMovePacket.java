@@ -2,24 +2,14 @@ package prj.net.packet.player;
 
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
+import prj.world.Direction;
 
 public class PlayerMovePacket extends Packet {
-    @Override
-    public PacketType getPacketType() {
-        return PacketType.playerMove;
-    }
-
-    public enum Direction{
-        UP,
-        DOWN,
-        LEFT,
-        RIGHT
-    }
-
     private final Direction direction;
     private final boolean value;
 
     public PlayerMovePacket(Direction direction, boolean value) {
+        super(PacketType.playerMove);
         this.direction = direction;
         this.value = value;
     }

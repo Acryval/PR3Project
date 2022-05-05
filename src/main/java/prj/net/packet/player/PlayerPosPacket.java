@@ -1,22 +1,18 @@
 package prj.net.packet.player;
 
-import org.joml.Vector2i;
+import org.joml.Vector2d;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
 
 public class PlayerPosPacket extends Packet {
-    @Override
-    public PacketType getPacketType() {
-        return PacketType.playerPos;
-    }
+    private final Vector2d pos;
 
-    private final Vector2i pos;
-
-    public PlayerPosPacket(Vector2i pos) {
+    public PlayerPosPacket(Vector2d pos) {
+        super(PacketType.playerPos);
         this.pos = pos;
     }
 
-    public Vector2i getPos() {
+    public Vector2d getPos() {
         return pos;
     }
 }

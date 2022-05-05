@@ -1,20 +1,27 @@
 package prj.world;
 
-// Klasa przechowująca wszystkie zmienne składające się na świat i odróżniające światy od siebie
-// Jedyne metody to gettery i settery ( !! wszystkie synchronizowane ze względu na zmienną !! )
-
-import prj.net.packet.system.Packable;
+import prj.entity.Player;
+import prj.net.packet.Packable;
+import prj.net.packet.PacketElement;
 
 public class WorldState implements Packable {
+    @PacketElement
+    private final Player player;
 
     public WorldState() {
-        //TODO set initial values
+        player = new Player();
     }
 
     public WorldState(WorldState initialState) {
+        this();
         set(initialState);
     }
 
     public void set(WorldState state){
+        player.setPos(state.player.getPos());
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

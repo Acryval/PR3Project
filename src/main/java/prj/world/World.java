@@ -1,15 +1,13 @@
 package prj.world;
 
-// Klasa przechowująca metody zależne od aktualnego stanu świata i bezpośrednio nań wpływające
-
+import org.joml.Vector2d;
 import prj.ClientThread;
 import prj.ServerThread;
 import prj.log.Logger;
-import prj.net.ConnectionListener;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
-import prj.net.packet.system.LoginPacket;
-import prj.net.packet.system.LogoutPacket;
+import prj.net.packet.player.PlayerMovePacket;
+import prj.net.packet.player.PlayerPosPacket;
 import prj.net.packet.world.WorldStatePacket;
 
 import java.awt.*;
@@ -19,36 +17,27 @@ import java.util.List;
 public class World {
     private final Logger logger = new Logger("");
     private final WorldState state;
-    private final ConnectionListener connectionListener;
-    private final ServerThread serverInstance;
-    private final ClientThread clientInstance;
+    private final boolean isServerWorld;
 
-    public World(World localWorld, int listenerPort, int listenerBacklog, ServerThread serverInstance) {
+    public static final double gravity = 500.0;
+
+    public World(ServerThread serverInstance) {
         logger.setName("Server world").dbg("init start");
+        if(serverInstance == null) throw new IllegalArgumentException("Cannot create a server world without a valid server");
 
-        this.serverInstance = serverInstance;
-        this.clientInstance = null;
-
-        this.connectionListener = new ConnectionListener(this, listenerPort, listenerBacklog);
-        this.state = new WorldState(localWorld.getState());
-
-        connectionListener.start();
+        this.isServerWorld = true;
+        this.state = new WorldState(ClientThread.instance.getWorld().getState());
 
         logger.dbg("init end");
     }
 
-    public World(int listenerPort, int listenerBacklog, ClientThread clientInstance) {
+    public World() {
         logger.setName("Client world").dbg("init start");
 
-        this.serverInstance = null;
-        this.clientInstance = clientInstance;
-
-        this.connectionListener = new ConnectionListener(this, listenerPort, listenerBacklog);
+        this.isServerWorld = false;
         this.state = new WorldState();
 
         generateWorld();
-
-        connectionListener.start();
 
         this.logger.dbg("init end");
     }
@@ -57,68 +46,49 @@ public class World {
         return state;
     }
 
-    public ConnectionListener getConnectionListener() {
-        return connectionListener;
-    }
-
-    public ServerThread getServerInstance() {
-        return serverInstance;
-    }
-
-    public ClientThread getClientInstance() {
-        return clientInstance;
-    }
-
-    public boolean isServerWorld(){
-        return serverInstance != null;
-    }
-
     public void generateWorld(){
+        state.getPlayer().setPos(new Vector2d(ClientThread.instance.getWidth(), ClientThread.instance.getWidth()).div(2));
     }
 
-    public void applyPacketData(Packet data){
-        if(data == null) return;
-        //TODO applyPacketCode --PacketType dependent--
+    public boolean applyPacketData(List<Packet> packets){
+        if(packets.size() == 0) return false;
 
-        switch (data.getPacketType()){
-            case login -> {
-                if(isServerWorld()){
-                    LoginPacket p = (LoginPacket) data;
-                    getServerInstance().getNetworkManager().clientLogin(p.getClientAddress());
+        boolean logout = false;
+        for(Packet data : packets) {
+            switch (data.getType()) {
+                case logout -> {
+                    if(isServerWorld) {
+                        logout = true;
+                    }
                 }
-            }
-            case logout -> {
-                if(isServerWorld()){
-                    getServerInstance().getNetworkManager().clientLogout(((LogoutPacket)data).getClientAddress());
+                case serverShutdown -> {
+                    if(!isServerWorld){
+                        logout = true;
+                    }
                 }
-            }
-            case serverShutdown -> {
-                if(!isServerWorld()){
-                    getClientInstance().getNetworkManager().shutdown();
+                case worldState -> ((WorldStatePacket)data).unpackInto(state);
+                case playerMove -> {
+                    PlayerMovePacket p = (PlayerMovePacket)data;
+                    state.getPlayer().setMoving(p.getDirection(), p.value());
                 }
-            }
-            case worldState -> {
-                synchronized(state){
-                    ((WorldStatePacket)data).unpacInto(state);
+                case playerPos -> {
+                    PlayerPosPacket p = (PlayerPosPacket) packets;
+                    state.getPlayer().setPos(p.getPos());
                 }
+                default -> {}
             }
-            case playerMove -> {
-            }
-            case playerPos -> {
-            }
-            default -> {}
         }
+
+        return logout;
     }
 
     public List<Packet> preparePackets(List<PacketType> returnPacketTypes){
-        //TODO prepare and send all expected packets
         List<Packet> out = new ArrayList<>();
 
-        for(PacketType pt : returnPacketTypes){
-            switch (pt){
+        for (PacketType pt : returnPacketTypes) {
+            switch (pt) {
                 case worldState -> out.add(new WorldStatePacket(state));
-                case getPlayerPos -> {
-                }
+                case playerPos -> out.add(new PlayerPosPacket(state.getPlayer().getPos()));
                 default -> {}
             }
         }
@@ -127,25 +97,21 @@ public class World {
     }
 
     public void updateState(double dtime){
-        if(isServerWorld()){
-            WorldState temp = new WorldState(state);
-            List<Packet> updatePackets = new ArrayList<>();
+        List<PacketType> updatePackets = new ArrayList<>();
+        Vector2d ppos = new Vector2d(state.getPlayer().getPos());
 
+        state.getPlayer().update(dtime);
 
-            send(updatePackets);
+        if(isServerWorld) {
+            if(!state.getPlayer().getPos().equals(ppos, 0.01)) updatePackets.add(PacketType.playerPos);
+
+            ServerThread.instance.getNetworkManager().broadcast(preparePackets(updatePackets));
         }
     }
 
     public void draw(Graphics2D g){
-    }
-
-    public void send(List<Packet> packets){
-        if(isServerWorld()){
-            getServerInstance().getNetworkManager().broadcast(packets);
-        }else{
-            getClientInstance().getNetworkManager().send(packets);
+        if(!isServerWorld) {
+            state.getPlayer().draw(g);
         }
     }
-
-    //TODO make relevant methods to change the world state
 }

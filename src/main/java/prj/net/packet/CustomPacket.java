@@ -1,7 +1,4 @@
-package prj.net.packet.system;
-
-import prj.net.packet.Packet;
-import prj.net.packet.PacketType;
+package prj.net.packet;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -10,15 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CustomPacket extends Packet {
-    @Override
-    public PacketType getPacketType() {
-        return PacketType.custom;
-    }
-
     private final Class<? extends Packable> targetClass;
     private final Map<String, Serializable> customData;
 
-    public CustomPacket(Packable p) {
+    public CustomPacket(PacketType trueType, Packable p) {
+        super(trueType);
         targetClass = p.getClass();
         customData = new HashMap<>();
 
@@ -67,7 +60,7 @@ public class CustomPacket extends Packet {
         }
     }
 
-    public void unpacInto(Packable p){
+    public void unpackInto(Packable p){
         if(p.getClass() != targetClass) {
             System.err.println("Cannot unpack " + targetClass.getName() + " into " + p.getClass().getName());
             return;

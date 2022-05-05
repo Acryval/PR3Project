@@ -4,19 +4,22 @@ import org.joml.Vector2i;
 import prj.log.Logger;
 import prj.net.ClientNetworkManager;
 import prj.net.packet.player.PlayerMovePacket;
+import prj.world.Camera;
+import prj.world.Direction;
 import prj.world.World;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
-import static prj.net.packet.player.PlayerMovePacket.Direction.*;
+public class ClientThread extends JPanel{
+    public static ClientThread instance = null;
 
-public class ClientThread extends JPanel implements MouseListener, MouseMotionListener {
     private final Logger logger = new Logger("");
     private World world;
+    private Camera cam;
     private ClientNetworkManager networkManager;
 
     private InputMap im;
@@ -25,23 +28,22 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
     private long totalFpsUpdateFrames;
     private double fpsUpdateDelay, totalFpsUpdateTime;
     private double fps, targetMillis;
-    private boolean paused, mousePressed, running;
-    private Vector2i mouse, dm, offset;
+    private boolean paused, running;
 
     private Font defaultFont;
 
     public ClientThread(int width, int height) {
         logger.setName("Client").dbg("init start");
+        instance = this;
+
         setBackground(Color.white);
         setPreferredSize(new Dimension(width, height));
         setFocusable(true);
         requestFocus();
 
-        addMouseListener(this);
-        addMouseMotionListener(this);
-
         initValues();
         loadActions();
+
         logger.dbg("init end");
     }
 
@@ -50,7 +52,6 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         am = getActionMap();
 
         paused = false;
-        mousePressed = false;
         running = true;
 
         fps = 60;
@@ -60,16 +61,16 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
 
         targetMillis = 1000 / fps;
 
-        mouse = new Vector2i();
-        dm = new Vector2i();
-        offset = new Vector2i();
-
         defaultFont = new Font("Arial", Font.PLAIN, 11);
 
         //TODO load world from save or generate new
-        world = new World(0, 10, this);
-        if(world.getConnectionListener().doesListenerSocketFailed()) System.exit(1);
-        networkManager = new ClientNetworkManager(this);
+        world = new World();
+        networkManager = new ClientNetworkManager();
+        networkManager.start();
+
+        cam = new Camera();
+        addMouseListener(cam);
+        addMouseMotionListener(cam);
     }
 
     public void loadActions(){
@@ -99,49 +100,57 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         am.put("pw", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(UP, true));
+                networkManager.send(new PlayerMovePacket(Direction.UP, true));
+                world.getState().getPlayer().setMoving(Direction.UP, true);
             }
         });
         am.put("rw", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(UP, false));
+                networkManager.send(new PlayerMovePacket(Direction.UP, false));
+                world.getState().getPlayer().setMoving(Direction.UP, false);
             }
         });
         am.put("ps", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(DOWN, true));
+                networkManager.send(new PlayerMovePacket(Direction.DOWN, true));
+                world.getState().getPlayer().setMoving(Direction.DOWN, true);
             }
         });
         am.put("rs", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(DOWN, false));
+                networkManager.send(new PlayerMovePacket(Direction.DOWN, false));
+                world.getState().getPlayer().setMoving(Direction.DOWN, false);
             }
         });
         am.put("pa", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(LEFT, true));
+                networkManager.send(new PlayerMovePacket(Direction.LEFT, true));
+                world.getState().getPlayer().setMoving(Direction.LEFT, true);
             }
         });
         am.put("ra", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(LEFT, false));
+                networkManager.send(new PlayerMovePacket(Direction.LEFT, false));
+                world.getState().getPlayer().setMoving(Direction.LEFT, false);
             }
         });
         am.put("pd", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(RIGHT, true));
+                networkManager.send(new PlayerMovePacket(Direction.RIGHT, true));
+                world.getState().getPlayer().setMoving(Direction.RIGHT, true);
             }
         });
         am.put("rd", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                networkManager.send(new PlayerMovePacket(RIGHT, false));
+                networkManager.send(new PlayerMovePacket(Direction.RIGHT, false));
+                world.getState().getPlayer().setMoving(Direction.RIGHT, false);
             }
         });
     }
@@ -152,35 +161,37 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
 
         if(paused) return;
 
-        if(totalFpsUpdateTime >= fpsUpdateDelay){
-            fps = 1000 * totalFpsUpdateFrames / totalFpsUpdateTime;
+        if(totalFpsUpdateTime*1000 >= fpsUpdateDelay){
+            fps = totalFpsUpdateFrames / totalFpsUpdateTime;
             totalFpsUpdateFrames = 0;
             totalFpsUpdateTime = 0;
         }
+
+        world.updateState(dt);
     }
 
     public void draw(Graphics2D g){
-        g.setColor(Color.white);
+        g.setColor(Color.black);
         g.setFont(defaultFont);
 
         g.drawString(String.format("FPS: %.0f", fps), 2, 11);
-        //g.translate(offset.x, offset.y);
+        Vector2i off = cam.getGlobalOffset();
+        g.translate(off.x, off.y);
 
-        getWorld().draw(g);
+        world.draw(g);
     }
-
-
 
     public void run() {
         logger.out("thread start");
 
         networkManager.startServerInstance();
+
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
         while(running){
             frameStart = System.nanoTime();
 
-            update((double)(frameStart - lastFrameUpdate) / 1000000);
+            update((double)(frameStart - lastFrameUpdate) / 1000000000);
             repaint();
 
             lastFrameUpdate = frameStart;
@@ -199,13 +210,7 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
             }
         }
 
-        try{
-            networkManager.disconnect();
-            world.getConnectionListener().shutdown();
-            Thread.sleep(100);
-        }catch (IOException | InterruptedException e){
-            logger.err("Failed to shut down client connection listener");
-        }
+        networkManager.shutdown();
         logger.out("thread stop");
     }
 
@@ -215,70 +220,12 @@ public class ClientThread extends JPanel implements MouseListener, MouseMotionLi
         draw((Graphics2D) g);
     }
 
-    @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent mouseEvent) {
-        mousePressed = true;
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent mouseEvent) {
-        Vector2i temp = new Vector2i(mouseEvent.getX(), mouseEvent.getY());
-        if(mousePressed){
-            mousePressed = false;
-            dm.set(temp);
-        }else{
-            offset.add(temp).sub(dm);
-            dm.set(temp);
-        }
-    }
-
-    public void setFpsUpdateDelay(double fpsUpdateDelay) {
-        this.fpsUpdateDelay = fpsUpdateDelay;
-    }
-
-    public void setFPSTarget(double target) {
-        this.targetMillis = 1000 / target;
-    }
-
     public void shutdown(){
         logger.dbg("shutdown");
         running = false;
     }
 
-    @Override
-    public void mouseMoved(MouseEvent mouseEvent) {
-        mouse.set(mouseEvent.getX(), mouseEvent.getY()).sub(offset);
-    }
-
     public World getWorld() {
         return world;
-    }
-
-    public ClientNetworkManager getNetworkManager() {
-        return networkManager;
-    }
-
-    public InetSocketAddress getListenerAddress(){
-        return world.getConnectionListener().getListenerAddress();
     }
 }

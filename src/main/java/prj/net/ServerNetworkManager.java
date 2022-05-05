@@ -3,7 +3,7 @@ package prj.net;
 import prj.ServerThread;
 import prj.log.Logger;
 import prj.net.packet.Packet;
-import prj.net.packet.PacketSender;
+import prj.net.packet.PacketType;
 import prj.net.packet.system.ServerShutdownPacket;
 
 import java.io.IOException;
@@ -12,67 +12,95 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerNetworkManager {
+public class ServerNetworkManager extends Thread {
     private final Logger logger = new Logger("");
-    private final ServerThread serverInstance;
-    private final List<InetSocketAddress> clientAddresses;
-    private boolean stopped;
 
-    public ServerNetworkManager(ServerThread serverInstance) {
+    private final ServerConnectionListener listener;
+    private final List<Socket> clients, pending;
+    private boolean running;
+
+    public ServerNetworkManager(int listenerBacklog) {
         logger.setName("Server network manager").dbg("init start");
-        this.serverInstance = serverInstance;
-        this.clientAddresses = new ArrayList<>();
+
+        this.listener = new ServerConnectionListener(listenerBacklog);
+        this.clients = new ArrayList<>();
+        this.pending = new ArrayList<>();
+
+        running = listener.isRunning();
+
         logger.dbg("init end");
     }
 
-    public synchronized void send(InetSocketAddress clientAddress, List<Packet> packets){
-        try {
-            if(packets.size() > 0) {
-                logger.announcePackets(clientAddress, "sending packets", packets);
-                new PacketSender(new Socket(clientAddress.getHostName(), clientAddress.getPort()), serverInstance.getWorld(), packets).start();
+    public void broadcast(List<Packet> packets){
+        synchronized (clients) {
+            for (Socket client : clients) {
+                Packet.send(logger, client, packets);
             }
-        }catch (IOException e){
-            logger.warn("failed to send packets to " + clientAddress + ": " + e.getMessage());
         }
     }
 
-    public synchronized void send(InetSocketAddress clientAddress, Packet...packets){
-        send(clientAddress, List.of(packets));
-    }
-
-    public synchronized void broadcast(List<Packet> packets){
-        for(InetSocketAddress clientAddress : clientAddresses){
-            send(clientAddress, packets);
-        }
-    }
-
-    public synchronized void broadcast(Packet...packets){
+    public void broadcast(Packet...packets){
         broadcast(List.of(packets));
     }
 
-    public synchronized int getActiveClients(){
-        return clientAddresses.size();
-    }
-
-    public synchronized void clientLogin(InetSocketAddress client){
-        logger.out("LOGIN " + client);
-        if (!clientAddresses.contains(client)) clientAddresses.add(client);
-    }
-
-    public synchronized void clientLogout(InetSocketAddress client){
-        logger.out("LOGOUT " + client);
-        clientAddresses.remove(client);
+    public InetSocketAddress getListenerAddress(){
+        return listener.getListenerAddress();
     }
 
     public void shutdown(){
         logger.dbg("shutdown");
-        for(int i = 1; i < clientAddresses.size(); i++){
-            send(clientAddresses.get(i), new ServerShutdownPacket());
-        }
-        stopped = true;
+        broadcast(new ServerShutdownPacket());
+        listener.shutdown();
+        running = false;
     }
 
-    public boolean isStopped(){
-        return stopped;
+    public void clientLogin(Socket client){
+        logger.out("Client login from " + client.getInetAddress());
+        pending.add(client);
+    }
+
+    @Override
+    public void run() {
+        listener.start();
+
+        List<Socket> clientLoggingOut = new ArrayList<>();
+        List<Packet> receivedPackets = new ArrayList<>();
+        List<PacketType> expectedPackets = new ArrayList<>();
+
+        while(running){
+            for (Socket s : clients) {
+                if(!s.isConnected() || s.isClosed()){
+                    clientLoggingOut.add(s);
+                    continue;
+                }
+
+                try {
+                    if(s.getInputStream().available() > 0){
+                        receivedPackets.addAll(Packet.receive(logger, s));
+                        for(Packet p : receivedPackets){
+                            expectedPackets.addAll(p.getExpectedReturnPackets());
+                        }
+
+                        if(ServerThread.instance.getWorld().applyPacketData(receivedPackets)){
+                            clientLoggingOut.add(s);
+                        }
+
+                        Packet.send(logger, s, ServerThread.instance.getWorld().preparePackets(expectedPackets));
+
+                        receivedPackets.clear();
+                        expectedPackets.clear();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            synchronized (clients) {
+                clients.removeAll(clientLoggingOut);
+                clients.addAll(pending);
+            }
+            clientLoggingOut.clear();
+            pending.clear();
+        }
     }
 }

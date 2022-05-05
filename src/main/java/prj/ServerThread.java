@@ -5,23 +5,25 @@ import prj.net.ServerNetworkManager;
 import prj.world.World;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
 public class ServerThread extends Thread {
+    public static ServerThread instance = null;
+
     private final Logger logger = new Logger("");
     private final World world;
     private final ServerNetworkManager networkManager;
     private double targetMillis;
     private boolean running;
 
-    public ServerThread(World localWorld, int listenerPort, int listenerBacklog) throws IOException {
+    public ServerThread(int listenerBacklog) throws IOException {
         logger.setName("Server").dbg("init start");
+        instance = this;
 
-        world = new World(localWorld, listenerPort, listenerBacklog, this);
-        networkManager = new ServerNetworkManager(this);
+        world = new World(this);
+        networkManager = new ServerNetworkManager(listenerBacklog);
         running = true;
 
-        targetMillis = 1000 / 60.0;
+        targetMillis = 1000 / 30.0;
         logger.dbg("init end");
     }
 
@@ -30,11 +32,12 @@ public class ServerThread extends Thread {
         logger.out("thread start");
 
         long frameStart, lastFrameStart = System.nanoTime(), threadWait;
+        networkManager.start();
 
         while(running){
             frameStart = System.nanoTime();
 
-            world.updateState((double)(frameStart - lastFrameStart)/1000000);
+            world.updateState((double)(frameStart - lastFrameStart)/1000000000);
 
             lastFrameStart = frameStart;
 
@@ -52,13 +55,7 @@ public class ServerThread extends Thread {
             }
         }
 
-        try {
-            networkManager.shutdown();
-            world.getConnectionListener().shutdown();
-        } catch (IOException e) {
-            logger.err("failed to shut down server connection listener");
-        }
-
+        networkManager.shutdown();
         logger.out("thread stop");
     }
 
@@ -78,9 +75,5 @@ public class ServerThread extends Thread {
 
     public ServerNetworkManager getNetworkManager() {
         return networkManager;
-    }
-
-    public InetSocketAddress getListenerAddress(){
-        return world.getConnectionListener().getListenerAddress();
     }
 }

@@ -3,39 +3,36 @@ package prj.net;
 import prj.ClientThread;
 import prj.ServerThread;
 import prj.log.Logger;
-import prj.net.packet.system.LoginPacket;
-import prj.net.packet.system.LogoutPacket;
 import prj.net.packet.Packet;
-import prj.net.packet.PacketSender;
-import prj.world.World;
+import prj.net.packet.system.LogoutPacket;
+import prj.net.packet.world.GetWorldStatePacket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ClientNetworkManager {
+public class ClientNetworkManager extends Thread {
     private final Logger logger = new Logger("");
-    private final World localWorld;
-    private InetSocketAddress serverAddress;
+    private Socket serverSocket;
     private ServerThread serverThread;
 
-    public ClientNetworkManager(ClientThread clientInstance) {
+    private boolean running;
+
+    public ClientNetworkManager() {
         logger.setName("Client network manager").dbg("init start");
-        this.localWorld = clientInstance.getWorld();
-        this.serverAddress = null;
+
+        serverSocket = null;
+        serverThread = null;
+        running = true;
+
         logger.dbg("init end");
     }
 
     public void send(List<Packet> packets){
-        if(serverAddress == null) return;
-        try {
-            if(packets.size() > 0) {
-                logger.announcePackets(serverAddress, "sending packets", packets);
-                new PacketSender(new Socket(serverAddress.getHostName(), serverAddress.getPort()), localWorld, packets).start();
-            }
-        }catch (IOException e){
-            logger.err("failed to send packets to " + serverAddress + ": " + e.getMessage());
+        if(serverSocket != null) {
+            Packet.send(logger, serverSocket, packets);
         }
     }
 
@@ -45,68 +42,90 @@ public class ClientNetworkManager {
 
     public void startServerInstance(){
         if(serverThread != null){
-            logger.err("cannot have more than one server instace running");
+            logger.err("Cannot start a second server thread");
             return;
         }
 
-        if(serverAddress != null){
-            logger.err("cannot start a server instance while being connected to a remote server");
-            return;
+        if(serverSocket != null){
+            logger.warn("Starting a server thread while being connected");
+            disconnect();
         }
 
         try {
-            logger.out("Starting local server");
-            serverThread = new ServerThread(localWorld, 0, 10);
-            serverAddress = serverThread.getListenerAddress();
-
+            serverThread = new ServerThread(256);
             serverThread.start();
-
-            send(new LoginPacket(localWorld.getConnectionListener().getListenerAddress()));
-        } catch (IOException e) {
+            Thread.sleep(200);
+        }catch (IOException e){
+            logger.err("Cannot start server thread");
+            serverThread = null;
+            running = false;
+            return;
+        }catch (InterruptedException e){
             e.printStackTrace();
         }
+
+        connectTo(serverThread.getNetworkManager().getListenerAddress());
+        send(new GetWorldStatePacket());
     }
 
     public void stopServerInstance(){
-        if(serverThread == null){
-            logger.warn("trying to stop a server that isn't running");
-        }else{
-            logger.out("Stopping local server");
+        disconnect();
+        if(serverThread != null) {
             serverThread.shutdown();
             serverThread = null;
         }
     }
 
-    public void connectTo(InetSocketAddress serverAddress){
-        if(serverThread != null){
-            logger.err("Trying to connect to a remote server while local instance is running");
-            return;
+    public void connectTo(InetSocketAddress serverAddress) {
+        logger.out("trying to connect to " + serverAddress);
+        if(serverSocket != null){
+            disconnect();
         }
 
-        disconnect();
-
-        logger.out("Connecting to " + serverAddress);
-        this.serverAddress = serverAddress;
-        send(new LoginPacket(localWorld.getConnectionListener().getListenerAddress()));
-    }
-
-    public void disconnect(){
-        if(serverThread != null){
-            stopServerInstance();
-        }else if(this.serverAddress != null){
-            logger.out("Disconnecting from " + this.serverAddress);
-            send(new LogoutPacket(localWorld.getConnectionListener().getListenerAddress()));
-            this.serverAddress = null;
-        }else{
-            logger.warn("Client isn't connected anywhere");
+        try {
+            serverSocket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
+            running = true;
+            logger.out("connected");
+        }catch (IOException e){
+            logger.err("cannot connect to " + serverAddress);
+            serverSocket = null;
+            running = false;
         }
     }
 
-    public InetSocketAddress getServerAddress() {
-        return serverAddress;
+    public void disconnect() {
+        if(serverSocket != null && !serverSocket.isClosed()){
+            logger.out("disconnecting from " + new InetSocketAddress(serverSocket.getInetAddress(), serverSocket.getPort()));
+            send(new LogoutPacket());
+        }
+
+        serverSocket = null;
+        running = false;
     }
 
-    public ServerThread getServerThread() {
-        return serverThread;
+    @Override
+    public void run() {
+        logger.dbg("thread start");
+        List<Packet> receivedPackets = new ArrayList<>();
+
+        while(running){
+            try{
+                if(serverSocket != null && serverSocket.getInputStream().available() > 0){
+                    receivedPackets.addAll(Packet.receive(logger, serverSocket));
+                    if(ClientThread.instance.getWorld().applyPacketData(receivedPackets)){
+                        disconnect();
+                    }
+                    receivedPackets.clear();
+                }
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        logger.dbg("thread stop");
+    }
+
+    public void shutdown(){
+        logger.dbg("shutdown");
+        stopServerInstance();
     }
 }

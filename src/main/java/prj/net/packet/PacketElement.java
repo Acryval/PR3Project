@@ -1,4 +1,4 @@
-package prj.net.packet.system;
+package prj.net.packet;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
