@@ -5,7 +5,7 @@ import java.awt.event.KeyEvent;
 
 public class KeyChecker extends KeyAdapter {
 
-    GamePanel panel;
+    private GamePanel panel;
 
     public KeyChecker(GamePanel panel) {
         this.panel = panel;
