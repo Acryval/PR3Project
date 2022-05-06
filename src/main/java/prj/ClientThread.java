@@ -168,7 +168,7 @@ public class ClientThread extends JPanel{
             totalFpsUpdateTime = 0;
         }
 
-        world.updateState(dt);
+        //world.updateState(dt);
     }
 
     public void draw(Graphics2D g){
@@ -186,7 +186,7 @@ public class ClientThread extends JPanel{
     public void run() {
         logger.out("thread start");
 
-        //networkManager.startServerInstance();
+        networkManager.startServerInstance();
 
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 

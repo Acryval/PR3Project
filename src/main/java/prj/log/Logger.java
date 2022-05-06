@@ -28,7 +28,7 @@ public class Logger {
     }
 
     public void log(LogType type, String s){
-        if(Prj.LOGFILE == null) return;
+        if(Prj.LOGFILE == null || (type == LogType.PACKET && !Prj.LOG_PACKETS)) return;
 
         String msg = getFormattedMsg(type, name, s);
 

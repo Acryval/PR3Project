@@ -58,7 +58,12 @@ public class Packet implements Serializable {
 
     public static List<Packet> receive(Logger receiver, Socket sessionSocket) {
         List<Packet> inPackets = new ArrayList<>();
-        if(sessionSocket == null) return inPackets;
+
+        if(sessionSocket == null){
+            receiver.err("socket is null");
+            return inPackets;
+        }
+
         try {
             ObjectInputStream ois = new ObjectInputStream(sessionSocket.getInputStream());
             Object o = ois.readObject();

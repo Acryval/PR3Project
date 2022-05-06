@@ -56,7 +56,9 @@ public class ServerNetworkManager extends Thread {
 
     public void clientLogin(Socket client){
         logger.out("Client login from " + client.getInetAddress());
-        pending.add(client);
+        synchronized (pending) {
+            pending.add(client);
+        }
     }
 
     @Override
@@ -70,13 +72,13 @@ public class ServerNetworkManager extends Thread {
 
         while(running){
             for (Socket s : clients) {
-                /*if(!s.isConnected() || s.isClosed()){
-                    if(!s.isConnected()) logger.err(s.getInetAddress() + " is not connected");
-                    if(s.isClosed()) logger.err(s.getInetAddress() + " is closed");
+                if(!s.isConnected()) logger.err(s.getInetAddress() + " is not connected");
+                if(s.isClosed()) logger.err(s.getInetAddress() + " is closed");
 
+                if(!s.isConnected() || s.isClosed()){
                     clientLoggingOut.add(s);
                     continue;
-                }*/
+                }
 
                 try {
                     if (s.getInputStream().available() > 0) {
@@ -99,12 +101,19 @@ public class ServerNetworkManager extends Thread {
                 }
             }
 
+            for(Socket s : clientLoggingOut){
+                logger.out("Client logout from " + s.getInetAddress());
+            }
+
             synchronized (clients) {
                 clients.removeAll(clientLoggingOut);
-                clients.addAll(pending);
+                clientLoggingOut.clear();
+
+                synchronized (pending) {
+                    clients.addAll(pending);
+                    pending.clear();
+                }
             }
-            clientLoggingOut.clear();
-            pending.clear();
         }
 
         logger.dbg("thread stop");

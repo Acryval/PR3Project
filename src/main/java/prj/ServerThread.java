@@ -23,7 +23,7 @@ public class ServerThread extends Thread {
         networkManager = new ServerNetworkManager(listenerBacklog);
         running = true;
 
-        targetMillis = 1000 / 30.0;
+        targetMillis = 1000 / 60.0;
         logger.dbg("init end");
     }
 
