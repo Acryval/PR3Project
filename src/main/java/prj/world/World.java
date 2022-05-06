@@ -47,7 +47,7 @@ public class World {
     }
 
     public void generateWorld(){
-        state.getPlayer().setPos(new Vector2d(ClientThread.instance.getWidth(), ClientThread.instance.getWidth()).div(2));
+        state.getPlayer().setPos(new Vector2d(ClientThread.instance.getWidth(), ClientThread.instance.getHeight()).div(2));
     }
 
     public boolean applyPacketData(List<Packet> packets){

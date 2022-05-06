@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientNetworkManager extends Thread {
+    public static final int DEFAULT_BACKLOG = 32;
+
     private final Logger logger = new Logger("");
     private Socket serverSocket;
     private ServerThread serverThread;
@@ -52,16 +54,14 @@ public class ClientNetworkManager extends Thread {
         }
 
         try {
-            serverThread = new ServerThread(256);
+            serverThread = new ServerThread(DEFAULT_BACKLOG);
             serverThread.start();
             Thread.sleep(200);
-        }catch (IOException e){
+        }catch (IOException | InterruptedException e) {
             logger.err("Cannot start server thread");
             serverThread = null;
             running = false;
             return;
-        }catch (InterruptedException e){
-            e.printStackTrace();
         }
 
         connectTo(serverThread.getNetworkManager().getListenerAddress());
@@ -86,8 +86,9 @@ public class ClientNetworkManager extends Thread {
             serverSocket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
             running = true;
             logger.out("connected");
+            this.start();
         }catch (IOException e){
-            logger.err("cannot connect to " + serverAddress);
+            logger.err("cannot connect to " + serverAddress + ", " + e.getMessage());
             serverSocket = null;
             running = false;
         }
@@ -109,15 +110,15 @@ public class ClientNetworkManager extends Thread {
         List<Packet> receivedPackets = new ArrayList<>();
 
         while(running){
-            try{
-                if(serverSocket != null && serverSocket.getInputStream().available() > 0){
+            try {
+                if (serverSocket != null && serverSocket.getInputStream().available() > 0) {
                     receivedPackets.addAll(Packet.receive(logger, serverSocket));
-                    if(ClientThread.instance.getWorld().applyPacketData(receivedPackets)){
+                    if (ClientThread.instance.getWorld().applyPacketData(receivedPackets)) {
                         disconnect();
                     }
                     receivedPackets.clear();
                 }
-            } catch (IOException e){
+            }catch(IOException e){
                 e.printStackTrace();
             }
         }

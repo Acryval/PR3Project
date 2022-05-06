@@ -75,13 +75,13 @@ public class ServerNetworkManager extends Thread {
                 }
 
                 try {
-                    if(s.getInputStream().available() > 0){
+                    if (s.getInputStream().available() > 0) {
                         receivedPackets.addAll(Packet.receive(logger, s));
-                        for(Packet p : receivedPackets){
+                        for (Packet p : receivedPackets) {
                             expectedPackets.addAll(p.getExpectedReturnPackets());
                         }
 
-                        if(ServerThread.instance.getWorld().applyPacketData(receivedPackets)){
+                        if (ServerThread.instance.getWorld().applyPacketData(receivedPackets)) {
                             clientLoggingOut.add(s);
                         }
 
@@ -90,7 +90,7 @@ public class ServerNetworkManager extends Thread {
                         receivedPackets.clear();
                         expectedPackets.clear();
                     }
-                } catch (IOException e) {
+                }catch(IOException e){
                     e.printStackTrace();
                 }
             }

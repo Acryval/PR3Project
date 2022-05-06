@@ -1,8 +1,5 @@
 package prj;
 
-import prj.log.LogType;
-import prj.log.Logger;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;

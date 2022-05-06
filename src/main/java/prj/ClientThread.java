@@ -19,7 +19,7 @@ public class ClientThread extends JPanel{
 
     private final Logger logger = new Logger("");
     private World world;
-    private Camera cam;
+    //private Camera cam;
     private ClientNetworkManager networkManager;
 
     private InputMap im;
@@ -66,11 +66,10 @@ public class ClientThread extends JPanel{
         //TODO load world from save or generate new
         world = new World();
         networkManager = new ClientNetworkManager();
-        networkManager.start();
 
-        cam = new Camera();
+        /*cam = new Camera();
         addMouseListener(cam);
-        addMouseMotionListener(cam);
+        addMouseMotionListener(cam);*/
     }
 
     public void loadActions(){
@@ -175,8 +174,8 @@ public class ClientThread extends JPanel{
         g.setFont(defaultFont);
 
         g.drawString(String.format("FPS: %.0f", fps), 2, 11);
-        Vector2i off = cam.getGlobalOffset();
-        g.translate(off.x, off.y);
+        /*Vector2i off = cam.getGlobalOffset();
+        g.translate(off.x, off.y);*/
 
         world.draw(g);
     }

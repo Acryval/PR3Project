@@ -21,4 +21,9 @@ public class PlayerMovePacket extends Packet {
     public boolean value() {
         return value;
     }
+
+    @Override
+    public String getName() {
+        return super.getName() + "(dir: " + direction.getName() + ", v:" + value + ")";
+    }
 }

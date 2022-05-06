@@ -15,4 +15,9 @@ public class PlayerPosPacket extends Packet {
     public Vector2d getPos() {
         return pos;
     }
+
+    @Override
+    public String getName() {
+        return super.getName() + "(x:" + pos.x + ", y:" + pos.y + ")";
+    }
 }

@@ -14,4 +14,9 @@ public class MultiPacket extends Packet {
     public int getNumberOfPackets() {
         return numberOfPackets;
     }
+
+    @Override
+    public String getName() {
+        return super.getName() + "(n:" + numberOfPackets + ")";
+    }
 }
