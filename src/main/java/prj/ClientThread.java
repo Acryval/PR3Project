@@ -183,10 +183,14 @@ public class ClientThread extends JPanel{
 
         Vector2i off = cam.getGlobalOffset();
 
-        g.drawString(String.format("FPS: %.0f", fps), 2, 11);
-        g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - getWidth()/2, getHeight()/2 - cam.getMouse().y), 2, 23);
-        g.drawString(String.format("offx: %d, offy: %d", cam.getOffset().x, cam.getOffset().y), 2, 35);
-        g.drawString(String.format("px: %d, py: %d", -(int)cam.getPos().x, (int)cam.getPos().y), 2, 47);
+        if(Prj.SHOWFPS) {
+            g.drawString(String.format("FPS: %.0f", fps), 2, 11);
+        }
+        if(Prj.DEBUG) {
+            g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - getWidth() / 2, getHeight() / 2 - cam.getMouse().y), 2, 23);
+            g.drawString(String.format("offx: %d, offy: %d", cam.getOffset().x, cam.getOffset().y), 2, 35);
+            g.drawString(String.format("px: %d, py: %d", -(int) cam.getPos().x, (int) cam.getPos().y), 2, 47);
+        }
 
         g.translate(getWidth()/2, getHeight()/2);
         g.translate(off.x, off.y);

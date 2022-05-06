@@ -13,7 +13,7 @@ import java.util.Vector;
 
 public class Camera implements MouseListener, MouseMotionListener {
     private final Vector2d pos;
-    private final Vector2i offset, mouse, dm;
+    private final Vector2i offset, mouse, dm, scrPos;
     private boolean freeCam, mousePressed;
 
     public Camera() {
@@ -21,12 +21,17 @@ public class Camera implements MouseListener, MouseMotionListener {
         this.offset = new Vector2i();
         this.mouse = new Vector2i();
         this.dm = new Vector2i();
+        this.scrPos = new Vector2i();
         this.mousePressed = false;
         this.freeCam = true;
     }
 
     public Vector2i getGlobalOffset(){
         return new Vector2i((int)pos.x, (int)pos.y).add(offset);
+    }
+
+    private void updateMouse(){
+        mouse.set(scrPos).sub(getGlobalOffset());
     }
 
     public Vector2i getMouse() {
@@ -52,6 +57,7 @@ public class Camera implements MouseListener, MouseMotionListener {
 
     public void setPos(Vector2d pos){
         this.pos.set(-pos.x, pos.y);
+        updateMouse();
     }
 
     @Override
@@ -89,12 +95,12 @@ public class Camera implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseMoved(MouseEvent mouseEvent) {
-        Vector2i screenPos = new Vector2i(mouseEvent.getX(), mouseEvent.getY());
+        scrPos.set(mouseEvent.getX(), mouseEvent.getY());
 
         if(!freeCam) {
-            offset.set(screenPos).sub(new Vector2i(ClientThread.instance.scrSize).div(2)).div(-5);
+            offset.set(scrPos).sub(new Vector2i(ClientThread.instance.scrSize).div(2)).div(-5);
         }
 
-        mouse.set(screenPos).sub(getGlobalOffset());
+        updateMouse();
     }
 }

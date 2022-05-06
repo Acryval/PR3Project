@@ -8,7 +8,7 @@ import prj.world.Direction;
 import java.awt.*;
 
 public class Player implements Packable {
-    public static final double MAX_VEL_DEFAULT = 100.0D;
+    public static final double MAX_VEL_DEFAULT = 250.0D;
 
     private boolean moveUp, moveDown, moveLeft, moveRight;
 
@@ -36,6 +36,10 @@ public class Player implements Packable {
 
     public void setPos(Vector2d pos) {
         this.pos.set(pos);
+    }
+
+    public void setMaxVelocity(double maxVelocity) {
+        this.maxVelocity = maxVelocity;
     }
 
     public void setMoving(Direction dir, boolean value){

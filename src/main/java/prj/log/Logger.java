@@ -28,22 +28,12 @@ public class Logger {
     }
 
     public void log(LogType type, String s){
-        if(Prj.LOGFILE == null || (type == LogType.PACKET && !Prj.LOG_PACKETS)) return;
+        if(type == LogType.PACKET && !Prj.LOG_PACKETS) return;
 
         String msg = getFormattedMsg(type, name, s);
 
-        if(Prj.LOGFILE == null){
-            if(type == LogType.DEBUG){
-                if(Prj.DEBUG){
-                    System.out.println(msg);
-                }
-            }else if(type == LogType.ERROR || type == LogType.WARNING){
-                System.err.println(msg);
-            }else{
-                System.out.println(msg);
-            }
-        }else{
-            if(Prj.DEBUG || !(type == LogType.DEBUG || type == LogType.PACKET)) {
+        if(Prj.LOG_INFO){
+            if(Prj.DEBUG || type != LogType.DEBUG) {
                 try {
                     FileWriter w = new FileWriter(Prj.LOGFILE, true);
                     w.append(msg).append(System.lineSeparator());
@@ -52,6 +42,16 @@ public class Logger {
                 } catch (IOException e) {
                     System.err.println("File " + Prj.LOGFILE + " inaccessible");
                 }
+            }
+        }else{
+            if(type == LogType.DEBUG){
+                if(Prj.DEBUG){
+                    System.out.println(msg);
+                }
+            }else if(type == LogType.ERROR || type == LogType.WARNING){
+                System.err.println(msg);
+            }else{
+                System.out.println(msg);
             }
         }
     }
@@ -75,7 +75,7 @@ public class Logger {
     public void testinfo(String s){log(LogType.TEST, s);}
 
     public void announcePackets(InetAddress address, String prefix, List<Packet> packets){
-        if(Prj.LOGFILE == null) return;
+        if(!Prj.LOG_INFO) return;
         StringBuilder s = new StringBuilder(prefix).append(" {");
 
         if(packets != null){

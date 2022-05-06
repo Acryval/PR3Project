@@ -65,7 +65,6 @@ public class ClientNetworkManager extends Thread {
         }
 
         connectTo(serverThread.getNetworkManager().getListenerAddress());
-        send(new GetWorldStatePacket());
     }
 
     public void stopServerInstance(){
@@ -84,11 +83,15 @@ public class ClientNetworkManager extends Thread {
 
         try {
             serverSocket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
-            running = true;
             logger.out("connected");
+
+            running = true;
             this.start();
+
+            send(new GetWorldStatePacket());
         }catch (IOException e){
             logger.err("cannot connect to " + serverAddress + ", " + e.getMessage());
+
             serverSocket = null;
             running = false;
         }

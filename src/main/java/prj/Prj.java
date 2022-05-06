@@ -13,8 +13,10 @@ import java.time.format.FormatStyle;
 import java.util.Date;
 
 public class Prj extends JFrame{
-    public static boolean DEBUG = false;
     public static boolean LOG_PACKETS = false;
+    public static boolean LOG_INFO = false;
+    public static boolean DEBUG = false;
+    public static boolean SHOWFPS = false;
     public static String LOGFILE = null;
 
     private final ClientThread cth;
@@ -50,27 +52,30 @@ public class Prj extends JFrame{
     }
 
     public static void setupLogfile(String filename){
-        if(LOGFILE == null) return;
+        if(LOG_INFO) {
+            LOGFILE = "logs/" + filename + " " + new SimpleDateFormat("yyyy-MM-dd HH-mm").format(new Date()) + ".log";
 
-        LOGFILE = "logs/" + filename + " " + new SimpleDateFormat("yyyy-MM-dd HH mm").format(new Date()) + ".log";
-
-        try {
-            new FileWriter(LOGFILE).append("LOG Start @ ").append(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).format(ZonedDateTime.now())).append(System.lineSeparator()).append(System.lineSeparator()).close();
-        }catch (IOException e){
-            System.err.println("File " + LOGFILE + " inaccessible");
+            try {
+                new FileWriter(LOGFILE).append("LOG Start @ ").append(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).format(ZonedDateTime.now())).append(System.lineSeparator()).append(System.lineSeparator()).close();
+            } catch (IOException e) {
+                System.err.println("File " + LOGFILE + " inaccessible");
+            }
         }
     }
 
     public static void main(String[] args) {
         for(String arg : args){
-            if(arg.contains("-l")){
-                Prj.LOGFILE = "";
+            if(arg.contains("--log")){
+                LOG_INFO = true;
+                if(arg.contains("packet")){
+                    LOG_PACKETS = true;
+                }
             }
-            if(arg.contains("-p")){
-                Prj.LOG_PACKETS = true;
-            }
-            if(arg.contains("-d")){
+            if(arg.contains("--debug")){
                 Prj.DEBUG = true;
+            }
+            if(arg.contains("--showFps")){
+                Prj.SHOWFPS = true;
             }
         }
 
