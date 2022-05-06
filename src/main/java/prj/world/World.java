@@ -72,7 +72,7 @@ public class World {
                     state.getPlayer().setMoving(p.getDirection(), p.value());
                 }
                 case playerPos -> {
-                    PlayerPosPacket p = (PlayerPosPacket) packets;
+                    PlayerPosPacket p = (PlayerPosPacket)data;
                     state.getPlayer().setPos(p.getPos());
                 }
                 default -> {}

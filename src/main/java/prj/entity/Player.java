@@ -66,7 +66,9 @@ public class Player implements Packable {
             move.add(new Vector2d(-1, 0));
         }
 
-        pos.add(move.normalize().mul(maxVelocity*dt));
+        if(!move.equals(new Vector2d())){
+            pos.add(move.normalize().mul(maxVelocity*dt));
+        }
     }
 
     public void draw(Graphics2D g){

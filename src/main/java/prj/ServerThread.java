@@ -31,8 +31,8 @@ public class ServerThread extends Thread {
     public void run() {
         logger.out("thread start");
 
-        long frameStart, lastFrameStart = System.nanoTime(), threadWait;
         networkManager.start();
+        long frameStart, lastFrameStart = System.nanoTime(), threadWait;
 
         while(running){
             frameStart = System.nanoTime();

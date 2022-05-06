@@ -24,6 +24,10 @@ public class Camera implements MouseListener, MouseMotionListener {
         return new Vector2i(pos).add(offset);
     }
 
+    public Vector2i getMouse() {
+        return mouse;
+    }
+
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {}
 

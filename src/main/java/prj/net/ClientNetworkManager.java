@@ -56,7 +56,7 @@ public class ClientNetworkManager extends Thread {
         try {
             serverThread = new ServerThread(DEFAULT_BACKLOG);
             serverThread.start();
-            Thread.sleep(200);
+            Thread.sleep(500);
         }catch (IOException | InterruptedException e) {
             logger.err("Cannot start server thread");
             serverThread = null;

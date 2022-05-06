@@ -50,7 +50,7 @@ public class ServerConnectionListener extends Thread {
 
     @Override
     public void run(){
-        logger.out("thread start");
+        logger.dbg("thread start");
 
         while(running){
             try {
@@ -73,6 +73,6 @@ public class ServerConnectionListener extends Thread {
             }
         }
 
-        logger.out("thread stop");
+        logger.dbg("thread stop");
     }
 }

@@ -19,7 +19,7 @@ public class ClientThread extends JPanel{
 
     private final Logger logger = new Logger("");
     private World world;
-    //private Camera cam;
+    private Camera cam;
     private ClientNetworkManager networkManager;
 
     private InputMap im;
@@ -36,8 +36,11 @@ public class ClientThread extends JPanel{
         logger.setName("Client").dbg("init start");
         instance = this;
 
+        Dimension dim = new Dimension(width, height);
+
         setBackground(Color.white);
-        setPreferredSize(new Dimension(width, height));
+        setPreferredSize(dim);
+        setSize(dim);
         setFocusable(true);
         requestFocus();
 
@@ -63,13 +66,12 @@ public class ClientThread extends JPanel{
 
         defaultFont = new Font("Arial", Font.PLAIN, 11);
 
-        //TODO load world from save or generate new
         world = new World();
         networkManager = new ClientNetworkManager();
 
-        /*cam = new Camera();
+        cam = new Camera();
         addMouseListener(cam);
-        addMouseMotionListener(cam);*/
+        addMouseMotionListener(cam);
     }
 
     public void loadActions(){
@@ -174,8 +176,9 @@ public class ClientThread extends JPanel{
         g.setFont(defaultFont);
 
         g.drawString(String.format("FPS: %.0f", fps), 2, 11);
-        /*Vector2i off = cam.getGlobalOffset();
-        g.translate(off.x, off.y);*/
+        g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x, -cam.getMouse().y), 2, 23);
+        Vector2i off = cam.getGlobalOffset();
+        g.translate(off.x, off.y);
 
         world.draw(g);
     }
@@ -183,7 +186,7 @@ public class ClientThread extends JPanel{
     public void run() {
         logger.out("thread start");
 
-        networkManager.startServerInstance();
+        //networkManager.startServerInstance();
 
         long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
 
