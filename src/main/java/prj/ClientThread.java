@@ -30,6 +30,8 @@ public class ClientThread extends JPanel{
     private double fps, targetMillis;
     private boolean paused, running;
 
+    public Vector2i scrSize;
+
     private Font defaultFont;
 
     public ClientThread(int width, int height) {
@@ -54,6 +56,8 @@ public class ClientThread extends JPanel{
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
 
+        scrSize = new Vector2i(getWidth(), getHeight());
+
         paused = false;
         running = true;
 
@@ -72,6 +76,8 @@ public class ClientThread extends JPanel{
         cam = new Camera();
         addMouseListener(cam);
         addMouseMotionListener(cam);
+
+        cam.attachTo(world.getState().getPlayer().getPos());
     }
 
     public void loadActions(){
@@ -168,16 +174,21 @@ public class ClientThread extends JPanel{
             totalFpsUpdateTime = 0;
         }
 
-        //world.updateState(dt);
+        cam.setPos(world.getState().getPlayer().getPos());
     }
 
     public void draw(Graphics2D g){
         g.setColor(Color.black);
         g.setFont(defaultFont);
 
-        g.drawString(String.format("FPS: %.0f", fps), 2, 11);
-        g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x, -cam.getMouse().y), 2, 23);
         Vector2i off = cam.getGlobalOffset();
+
+        g.drawString(String.format("FPS: %.0f", fps), 2, 11);
+        g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - getWidth()/2, getHeight()/2 - cam.getMouse().y), 2, 23);
+        g.drawString(String.format("offx: %d, offy: %d", cam.getOffset().x, cam.getOffset().y), 2, 35);
+        g.drawString(String.format("px: %d, py: %d", -(int)cam.getPos().x, (int)cam.getPos().y), 2, 47);
+
+        g.translate(getWidth()/2, getHeight()/2);
         g.translate(off.x, off.y);
 
         world.draw(g);
