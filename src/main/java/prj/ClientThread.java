@@ -48,6 +48,10 @@ public class ClientThread extends GameState {
 
         cam = new Camera();
         cam.attachTo(world.getState().getPlayer().getPos());
+
+        GameStateManager.instance.addMouseListener(cam);
+        GameStateManager.instance.addMouseMotionListener(cam);
+
         networkManager.startServerInstance();
 
         logger.dbg("init end");
@@ -81,14 +85,13 @@ public class ClientThread extends GameState {
     @Override
     public List<Packet> unload(List<Packet> endData) {
         shutdown();
+        GameStateManager.instance.removeMouseListener(cam);
+        GameStateManager.instance.removeMouseMotionListener(cam);
         return endData;
     }
 
     @Override
     public void setActions(InputMap im, ActionMap am) {
-        GameStateManager.instance.addMouseListener(cam);
-        GameStateManager.instance.addMouseMotionListener(cam);
-
         im.put(KeyStroke.getKeyStroke("pressed ESCAPE"), "exit");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pause");
 
@@ -194,6 +197,7 @@ public class ClientThread extends GameState {
     public void shutdown(){
         logger.dbg("shutdown");
         networkManager.shutdown();
+
     }
 
     public World getWorld() {
