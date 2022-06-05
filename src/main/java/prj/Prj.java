@@ -1,5 +1,8 @@
 package prj;
 
+import prj.gamestates.GameStateManager;
+import prj.net.packet.gamestate.ScreenDimensionPacket;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -18,16 +21,16 @@ public class Prj extends JFrame{
     public static boolean DEBUG = false;
     public static boolean SHOWFPS = false;
     public static String LOGFILE = null;
-
-    private final ClientThread cth;
+    private final GameStateManager gsm;
 
     public Prj(String title, int width, int height) throws HeadlessException {
         setupLogfile("GameLog");
 
-        cth = new ClientThread(width, height);
+        gsm = new GameStateManager(width, height);
+        gsm.registerGameState("client", ClientThread.class);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setContentPane(cth);
+        setContentPane(gsm);
         setTitle(title);
 
         pack();
@@ -38,7 +41,7 @@ public class Prj extends JFrame{
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                cth.shutdown();
+                gsm.shutdown();
 
                 try {
                     Thread.sleep(500);
@@ -48,7 +51,8 @@ public class Prj extends JFrame{
             }
         });
 
-        cth.run();
+        gsm.setState("client", new ScreenDimensionPacket(width, height));
+        ((ClientThread)gsm.getCurrentState()).run();
     }
 
     public static void setupLogfile(String filename){

@@ -1,8 +1,13 @@
 package prj;
 
 import org.joml.Vector2i;
+import prj.gamestates.GameState;
+import prj.gamestates.GameStateManager;
 import prj.log.Logger;
 import prj.net.ClientNetworkManager;
+import prj.net.packet.Packet;
+import prj.net.packet.PacketType;
+import prj.net.packet.gamestate.ScreenDimensionPacket;
 import prj.net.packet.player.PlayerMovePacket;
 import prj.world.Camera;
 import prj.world.Direction;
@@ -13,17 +18,15 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
-public class ClientThread extends JPanel{
+public class ClientThread extends GameState {
     public static ClientThread instance = null;
 
     private final Logger logger = new Logger("");
     private World world;
     private Camera cam;
     private ClientNetworkManager networkManager;
-
-    private InputMap im;
-    private ActionMap am;
 
     private long totalFpsUpdateFrames;
     private double fpsUpdateDelay, totalFpsUpdateTime;
@@ -34,29 +37,10 @@ public class ClientThread extends JPanel{
 
     private Font defaultFont;
 
-    public ClientThread(int width, int height) {
+    @Override
+    public GameState init(List<Packet> dataIn) {
         logger.setName("Client").dbg("init start");
         instance = this;
-
-        Dimension dim = new Dimension(width, height);
-
-        setBackground(Color.white);
-        setPreferredSize(dim);
-        setSize(dim);
-        setFocusable(true);
-        requestFocus();
-
-        initValues();
-        loadActions();
-
-        logger.dbg("init end");
-    }
-
-    public void initValues(){
-        im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
-        am = getActionMap();
-
-        scrSize = new Vector2i(getWidth(), getHeight());
 
         paused = false;
         running = true;
@@ -69,18 +53,62 @@ public class ClientThread extends JPanel{
         targetMillis = 1000 / fps;
 
         defaultFont = new Font("Arial", Font.PLAIN, 11);
+        scrSize = new Vector2i();
 
         world = new World();
         networkManager = new ClientNetworkManager();
 
         cam = new Camera();
-        addMouseListener(cam);
-        addMouseMotionListener(cam);
-
         cam.attachTo(world.getState().getPlayer().getPos());
+
+        logger.dbg("init end");
+        return super.init(dataIn);
     }
 
-    public void loadActions(){
+    public int getWidth(){
+        return scrSize.x;
+    }
+
+    public int getHeight(){
+        return scrSize.y;
+    }
+
+    public void update(double dt){
+        totalFpsUpdateTime += dt;
+        totalFpsUpdateFrames++;
+
+        if(paused) return;
+
+        if(totalFpsUpdateTime*1000 >= fpsUpdateDelay){
+            fps = totalFpsUpdateFrames / totalFpsUpdateTime;
+            totalFpsUpdateFrames = 0;
+            totalFpsUpdateTime = 0;
+        }
+
+        cam.setPos(world.getState().getPlayer().getPos());
+    }
+
+    @Override
+    public void processPackets(List<Packet> dataIn) {
+        for(Packet p : dataIn){
+            if (p.getType() == PacketType.scrDimension) {
+                Dimension d = ((ScreenDimensionPacket) p).getScreenDimension();
+                scrSize = new Vector2i(d.width, d.height);
+            }
+        }
+    }
+
+    @Override
+    public List<Packet> unload(List<Packet> endData) {
+        shutdown();
+        return endData;
+    }
+
+    @Override
+    public void setActions(InputMap im, ActionMap am) {
+        GameStateManager.instance.addMouseListener(cam);
+        GameStateManager.instance.addMouseMotionListener(cam);
+
         im.put(KeyStroke.getKeyStroke("pressed ESCAPE"), "exit");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pause");
 
@@ -162,22 +190,7 @@ public class ClientThread extends JPanel{
         });
     }
 
-    public void update(double dt){
-        totalFpsUpdateTime += dt;
-        totalFpsUpdateFrames++;
-
-        if(paused) return;
-
-        if(totalFpsUpdateTime*1000 >= fpsUpdateDelay){
-            fps = totalFpsUpdateFrames / totalFpsUpdateTime;
-            totalFpsUpdateFrames = 0;
-            totalFpsUpdateTime = 0;
-        }
-
-        cam.setPos(world.getState().getPlayer().getPos());
-    }
-
-    public void draw(Graphics2D g){
+    public void draw(Graphics2D g, int width, int height){
         g.setColor(Color.black);
         g.setFont(defaultFont);
 
@@ -187,12 +200,12 @@ public class ClientThread extends JPanel{
             g.drawString(String.format("FPS: %.0f", fps), 2, 11);
         }
         if(Prj.DEBUG) {
-            g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - getWidth() / 2, getHeight() / 2 - cam.getMouse().y), 2, 23);
+            g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - width / 2, height / 2 - cam.getMouse().y), 2, 23);
             g.drawString(String.format("offx: %d, offy: %d", cam.getOffset().x, cam.getOffset().y), 2, 35);
             g.drawString(String.format("px: %d, py: %d", -(int) cam.getPos().x, (int) cam.getPos().y), 2, 47);
         }
 
-        g.translate(getWidth()/2, getHeight()/2);
+        g.translate(width/2, height/2);
         g.translate(off.x, off.y);
 
         world.draw(g);
@@ -209,7 +222,7 @@ public class ClientThread extends JPanel{
             frameStart = System.nanoTime();
 
             update((double)(frameStart - lastFrameUpdate) / 1000000000);
-            repaint();
+            GameStateManager.instance.repaint();
 
             lastFrameUpdate = frameStart;
 
@@ -229,12 +242,6 @@ public class ClientThread extends JPanel{
 
         networkManager.shutdown();
         logger.out("thread stop");
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        draw((Graphics2D) g);
     }
 
     public void shutdown(){

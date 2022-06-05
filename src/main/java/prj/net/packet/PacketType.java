@@ -19,7 +19,12 @@ public enum PacketType {
 
     // request packets
     getWorldState("World State Request Packet"),
-    getPlayerPos("Player Position Request Packet");
+    getPlayerPos("Player Position Request Packet"),
+
+
+    // game state packets
+    scrDimension("Screen Dimension"),
+    passData("Pass Data");
 
     private final String packetName;
 
