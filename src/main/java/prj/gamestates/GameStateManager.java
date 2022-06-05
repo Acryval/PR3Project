@@ -19,6 +19,12 @@ public class GameStateManager extends JPanel {
     private final Map<String, GameState> loadedStates;
     private final InputMap im;
     private final ActionMap am;
+    private final double fpsUpdateDelay;
+    private final double targetMillis;
+    private long totalFpsUpdateFrames;
+    private double totalFpsUpdateTime;
+    private double fps;
+    private boolean running;
 
     public GameStateManager(int width, int height) {
         logger.setName("Game State Manager").dbg("init start");
@@ -38,6 +44,14 @@ public class GameStateManager extends JPanel {
 
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
+
+        fps = 60;
+        fpsUpdateDelay = 200;
+        totalFpsUpdateFrames = 0;
+        totalFpsUpdateTime = 0;
+
+        targetMillis = 1000 / fps;
+        running = true;
 
         logger.dbg("init end");
     }
@@ -112,6 +126,10 @@ public class GameStateManager extends JPanel {
         }
     }
 
+    public void stop(){
+        running = false;
+    }
+
     public void shutdown(){
         currentState = null;
         loadedStates.forEach((k, v) -> v.unload());
@@ -121,5 +139,53 @@ public class GameStateManager extends JPanel {
 
     public GameState getCurrentState() {
         return currentState;
+    }
+
+    public void updateFPS(double dt){
+        totalFpsUpdateTime += dt;
+        totalFpsUpdateFrames++;
+
+        if(totalFpsUpdateTime*1000 >= fpsUpdateDelay){
+            fps = totalFpsUpdateFrames / totalFpsUpdateTime;
+            totalFpsUpdateFrames = 0;
+            totalFpsUpdateTime = 0;
+        }
+    }
+
+    public void run() {
+        logger.dbg("render start");
+        long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
+        double dt;
+
+        while(running){
+            frameStart = System.nanoTime();
+
+            dt = (double)(frameStart - lastFrameUpdate) / 1000000000;
+            updateFPS(dt);
+            currentState.update(dt);
+            repaint();
+
+            lastFrameUpdate = frameStart;
+
+            threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
+
+            if(threadWait < 0){
+                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS )", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
+                threadWait = 0;
+            }
+
+            try{
+                Thread.sleep(threadWait);
+            }catch (InterruptedException e){
+                logger.err("interrupted: " + e.getMessage());
+            }
+        }
+
+        shutdown();
+        logger.dbg("render stop");
+    }
+
+    public double getFps() {
+        return fps;
     }
 }

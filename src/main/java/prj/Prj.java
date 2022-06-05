@@ -41,7 +41,7 @@ public class Prj extends JFrame{
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                gsm.shutdown();
+                gsm.stop();
 
                 try {
                     Thread.sleep(500);
@@ -52,7 +52,7 @@ public class Prj extends JFrame{
         });
 
         gsm.setState("client", new ScreenDimensionPacket(width, height));
-        ((ClientThread)gsm.getCurrentState()).run();
+        gsm.run();
     }
 
     public static void setupLogfile(String filename){

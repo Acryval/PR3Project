@@ -27,11 +27,7 @@ public class ClientThread extends GameState {
     private World world;
     private Camera cam;
     private ClientNetworkManager networkManager;
-
-    private long totalFpsUpdateFrames;
-    private double fpsUpdateDelay, totalFpsUpdateTime;
-    private double fps, targetMillis;
-    private boolean paused, running;
+    private boolean paused;
 
     public Vector2i scrSize;
 
@@ -43,14 +39,6 @@ public class ClientThread extends GameState {
         instance = this;
 
         paused = false;
-        running = true;
-
-        fps = 60;
-        fpsUpdateDelay = 200;
-        totalFpsUpdateFrames = 0;
-        totalFpsUpdateTime = 0;
-
-        targetMillis = 1000 / fps;
 
         defaultFont = new Font("Arial", Font.PLAIN, 11);
         scrSize = new Vector2i();
@@ -60,6 +48,7 @@ public class ClientThread extends GameState {
 
         cam = new Camera();
         cam.attachTo(world.getState().getPlayer().getPos());
+        networkManager.startServerInstance();
 
         logger.dbg("init end");
         return super.init(dataIn);
@@ -74,16 +63,7 @@ public class ClientThread extends GameState {
     }
 
     public void update(double dt){
-        totalFpsUpdateTime += dt;
-        totalFpsUpdateFrames++;
-
         if(paused) return;
-
-        if(totalFpsUpdateTime*1000 >= fpsUpdateDelay){
-            fps = totalFpsUpdateFrames / totalFpsUpdateTime;
-            totalFpsUpdateFrames = 0;
-            totalFpsUpdateTime = 0;
-        }
 
         cam.setPos(world.getState().getPlayer().getPos());
     }
@@ -123,7 +103,7 @@ public class ClientThread extends GameState {
 
         am.put("exit", new AbstractAction() {
             public void actionPerformed(ActionEvent actionEvent) {
-                shutdown();
+                GameStateManager.instance.stop();
             }
         });
         am.put("pause", new AbstractAction() {
@@ -197,7 +177,7 @@ public class ClientThread extends GameState {
         Vector2i off = cam.getGlobalOffset();
 
         if(Prj.SHOWFPS) {
-            g.drawString(String.format("FPS: %.0f", fps), 2, 11);
+            g.drawString(String.format("FPS: %.0f", GameStateManager.instance.getFps()), 2, 11);
         }
         if(Prj.DEBUG) {
             g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - width / 2, height / 2 - cam.getMouse().y), 2, 23);
@@ -211,42 +191,9 @@ public class ClientThread extends GameState {
         world.draw(g);
     }
 
-    public void run() {
-        logger.out("thread start");
-
-        networkManager.startServerInstance();
-
-        long frameStart, lastFrameUpdate = System.nanoTime(), threadWait;
-
-        while(running){
-            frameStart = System.nanoTime();
-
-            update((double)(frameStart - lastFrameUpdate) / 1000000000);
-            GameStateManager.instance.repaint();
-
-            lastFrameUpdate = frameStart;
-
-            threadWait = (long)(targetMillis - (System.nanoTime() - frameStart) / 1000000);
-
-            if(threadWait < 0){
-                logger.warn(String.format("lag %dms ( %.2f frames at %.0f FPS )", -threadWait, -threadWait / targetMillis, 1000 / targetMillis));
-                threadWait = 0;
-            }
-
-            try{
-                Thread.sleep(threadWait);
-            }catch (InterruptedException e){
-                logger.err("interrupted: " + e.getMessage());
-            }
-        }
-
-        networkManager.shutdown();
-        logger.out("thread stop");
-    }
-
     public void shutdown(){
         logger.dbg("shutdown");
-        running = false;
+        networkManager.shutdown();
     }
 
     public World getWorld() {

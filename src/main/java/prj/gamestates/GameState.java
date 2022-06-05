@@ -28,6 +28,7 @@ public abstract class GameState {
     public abstract void processPackets(List<Packet> dataIn);
     public abstract List<Packet> unload(List<Packet> endData);
     public abstract void setActions(InputMap im, ActionMap am);
+    public abstract void update(double dt);
     public abstract void draw(Graphics2D g, int width, int height);
 
     public GameState init(Packet...dataIn){
