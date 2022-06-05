@@ -2,37 +2,27 @@ package prj.net.packet;
 
 public enum PacketType {
     // control packets
-    custom("Custom Packet"),
-    multiPacket("Multi Packet"),
+    objectPacket,
+    multiPacket,
 
     // endpoint packets
-    logout("Logout Packet"),
-    serverShutdown("Server Shutdown Packet"),
+    logout,
+    serverShutdown,
 
     // world packets
-    worldState("World State Packet"),
+    worldState,
 
     // player packets
-    playerMove("Player Move Packet"),
-    playerPos("Player Position Packet"),
+    playerMove,
+    playerPos,
 
 
     // request packets
-    getWorldState("World State Request Packet"),
-    getPlayerPos("Player Position Request Packet"),
+    getWorldState,
+    getPlayerPos,
 
 
     // game state packets
-    scrDimension("Screen Dimension"),
-    passData("Pass Data");
-
-    private final String packetName;
-
-    PacketType(String packetName){
-        this.packetName = packetName;
-    }
-
-    public String getPacketName() {
-        return packetName;
-    }
+    scrDimension,
+    passData
 }

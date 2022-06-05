@@ -24,6 +24,6 @@ public class PlayerMovePacket extends Packet {
 
     @Override
     public String getName() {
-        return super.getName() + "(dir:" + direction.getName() + ", v:" + value + ")";
+        return super.getName() + "(dir:" + direction + ", v:" + value + ")";
     }
 }

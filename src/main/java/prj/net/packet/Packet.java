@@ -22,7 +22,7 @@ public class Packet implements Serializable {
     }
 
     public String getName(){
-        return type.getPacketName();
+        return "" + type;
     }
 
     public List<PacketType> getExpectedReturnPackets() {

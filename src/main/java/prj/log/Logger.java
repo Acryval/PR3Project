@@ -24,16 +24,16 @@ public class Logger {
     }
 
     public static String getFormattedMsg(LogType type, String name, String msg){
-        return String.format("%s [%s]:%s - %s", dateFormatter.format(new Date()), type.name, name, msg);
+        return String.format("%s [%s]:%s - %s", dateFormatter.format(new Date()), type, name, msg);
     }
 
     public void log(LogType type, String s){
-        if(type == LogType.PACKET && !Prj.LOG_PACKETS) return;
+        if(type == LogType.PACK && !Prj.LOG_PACKETS) return;
 
         String msg = getFormattedMsg(type, name, s);
 
         if(Prj.LOG_INFO){
-            if(Prj.DEBUG || type != LogType.DEBUG) {
+            if(Prj.DEBUG || type != LogType.DEBG) {
                 try {
                     FileWriter w = new FileWriter(Prj.LOGFILE, true);
                     w.append(msg).append(System.lineSeparator());
@@ -44,11 +44,11 @@ public class Logger {
                 }
             }
         }else{
-            if(type == LogType.DEBUG){
+            if(type == LogType.DEBG){
                 if(Prj.DEBUG){
                     System.out.println(msg);
                 }
-            }else if(type == LogType.ERROR || type == LogType.WARNING){
+            }else if(type == LogType.ERR || type == LogType.WARN){
                 System.err.println(msg);
             }else{
                 System.out.println(msg);
@@ -61,15 +61,15 @@ public class Logger {
     }
 
     public void warn(String s){
-        log(LogType.WARNING, s);
+        log(LogType.WARN, s);
     }
 
     public void err(String s){
-        log(LogType.ERROR, s);
+        log(LogType.ERR, s);
     }
 
     public void dbg(String s){
-        log(LogType.DEBUG, s);
+        log(LogType.DEBG, s);
     }
 
     public void testinfo(String s){log(LogType.TEST, s);}
@@ -97,7 +97,7 @@ public class Logger {
             s.append(" to ").append(address);
         }
 
-        log(LogType.PACKET, s.toString());
+        log(LogType.PACK, s.toString());
     }
 
     public void announcePackets(InetAddress address, String prefix, Packet... packets){

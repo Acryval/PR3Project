@@ -6,16 +6,25 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CustomPacket extends Packet {
+public class ObjectPacket extends Packet {
     private final Class<? extends Packable> targetClass;
     private final Map<String, Serializable> customData;
 
-    public CustomPacket(PacketType trueType, Packable p) {
+    public ObjectPacket(Packable p){
+        this(PacketType.objectPacket, p);
+    }
+
+    public ObjectPacket(PacketType trueType, Packable p) {
         super(trueType);
         targetClass = p.getClass();
         customData = new HashMap<>();
 
         pack(p, "");
+    }
+
+    @Override
+    public String getName() {
+        return super.getName() + "{" + targetClass.getName() + "}";
     }
 
     private void pack(Packable p, String namePrefix){
