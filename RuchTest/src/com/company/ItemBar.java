@@ -30,7 +30,6 @@ public class ItemBar {
         this.inHandItemIndex = inHandItemIndex;
     }
 
-    /* Settery i gettery */
     public int getPlayerPosX() {
         return playerPosX;
     }
@@ -126,7 +125,6 @@ public class ItemBar {
     public void setPanel(GamePanel panel) {
         this.panel = panel;
     }
-    /* ****** */
 
     public void addItem(Item item) {
         if(itemBar.size() != maxCapacity) {
@@ -138,10 +136,6 @@ public class ItemBar {
 
     }
 
-    public String getInHandItemType() {
-        return itemBar.get(inHandItemIndex).getItemType();
-    }
-
     public void draw(Graphics2D g2d) {
         for(int i = 0 ; i < maxCapacity ; i++) {
             if(i == inHandItemIndex) {
@@ -150,10 +144,10 @@ public class ItemBar {
                 g2d.setColor(Color.YELLOW);
                 g2d.fillRect(x + i * (cellWidth + gap) + 1, y + 1, cellWidth - 1, cellHeight - 1);
                 if(isFacingRight) {
-                    g2d.drawImage(itemBar.get(i).getItemImage(), playerPosX + 25, playerPosY - 50, panel);
+                    g2d.drawImage(itemBar.get(i).getItemImage(), playerPosX + 25, playerPosY - 25, panel);
                 }
                 else {
-                    g2d.drawImage(itemBar.get(i).getItemImage(), playerPosX - 25, playerPosY - 50, panel);
+                    g2d.drawImage(itemBar.get(i).getItemImage(), playerPosX - 25, playerPosY - 25, panel);
                 }
             }
             else {
@@ -162,7 +156,7 @@ public class ItemBar {
                 g2d.setColor(Color.WHITE);
                 g2d.fillRect(x + i * (cellWidth + gap) + 1, y + 1, cellWidth - 1, cellHeight - 1);
             }
-            g2d.drawImage(itemBar.get(i).getItemIcon(), x + 5, y + 5, panel);
+            g2d.drawImage(itemBar.get(i).getItemIcon(), x + 5 + (40 + 5 + gap + 5) * i, y + 5, panel);
         }
     }
 }

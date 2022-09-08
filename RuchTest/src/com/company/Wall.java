@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class Wall {
+public abstract class Wall {
 
     private int x;
     private int y;
@@ -112,6 +112,7 @@ public class Wall {
     }
     /* ****** */
 
+    /*
     private void loadImage() {
         ImageIcon ii = new ImageIcon("BlockPrototype.png");
         image.add(ii.getImage());
@@ -128,15 +129,17 @@ public class Wall {
         ii = new ImageIcon("BlockPrototypeBrokenStage4.png");
         image.add(ii.getImage());
     }
+    */
 
+    /*
     public void draw(Graphics2D g2d) {
         if(this.isCollision) {
-            /*
+
             g2d.setColor(Color.BLACK);
             g2d.drawRect(x, y, width, height);
             g2d.setColor(Color.WHITE);
             g2d.fillRect(x + 1, y + 1, width - 1, height - 1);
-            */
+
             if(durability < 20) {
                 g2d.drawImage(image.get(4), x, y, panel);
             }
@@ -154,4 +157,8 @@ public class Wall {
             }
         }
     }
+    */
+
+    public abstract void loadImage();
+    public abstract void draw(Graphics2D g2d);
 }

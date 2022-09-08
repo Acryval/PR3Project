@@ -3,24 +3,15 @@ package com.company;
 import javax.swing.*;
 import java.awt.*;
 
-public class Item {
+public abstract class Item {
 
-    private String itemType;
     private Image itemImage;
     private Image itemIcon;
+    private int range;
 
-    public Item(String itemType, String pathToImage, String pathToIcon) {
-        this.itemType = itemType;
+    public Item(String pathToImage, String pathToIcon, int range) {
         loadImage(pathToImage, pathToIcon);
-    }
-
-    /* Settery i gettery */
-    public String getItemType() {
-        return itemType;
-    }
-
-    public void setItemType(String itemType) {
-        this.itemType = itemType;
+        this.range = range;
     }
 
     public Image getItemImage() {
@@ -38,7 +29,14 @@ public class Item {
     public void setItemIcon(Image itemIcon) {
         this.itemIcon = itemIcon;
     }
-    /* ****** */
+
+    public int getRange() {
+        return range;
+    }
+
+    public void setRange(int range) {
+        this.range = range;
+    }
 
     public void loadImage(String pathToImage, String pathToIcon) {
         ImageIcon ii = new ImageIcon(pathToImage);

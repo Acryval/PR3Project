@@ -166,7 +166,7 @@ public class Player {
 
     public void move() {
         if(keyLeft && keyRight || !keyLeft && !keyRight) {
-            velocityX *= 0.8;
+            velocityX *= 0.9;
         }
         else if(keyLeft && !keyRight) {
             velocityX--;
@@ -237,7 +237,7 @@ public class Player {
         */
 
         /* kursor wciaz do poprawienia! */
-        panel.getMouseCursor().setX(panel.getMouseCursor().getX() + (int)velocityX);
+        panel.getMouseCursor().setX(panel.getMouseCursor().getX()+ (int)velocityX);
         panel.getMouseCursor().setY(panel.getMouseCursor().getY() + (int)velocityY);
 
         itemBar.setX(x - startingPosX + 10);
