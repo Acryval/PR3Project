@@ -33,8 +33,8 @@ public class Player implements Serializable {
         this.startingPosY = y;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.width = 45;
-        this.height = 90;
+        this.width = 44;
+        this.height = 88;
         this.hitbox = new Rectangle(this.x, this.y, this.width, this.height);
         this.image = "player";
         this.itemBar = itemBar;

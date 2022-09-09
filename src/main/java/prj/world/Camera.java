@@ -83,7 +83,7 @@ public class Camera implements MouseListener, MouseMotionListener {
             return;
         }
 
-        setInRange(offset.length() <= itemHeld.getRange() && pointedWall.isBreakable());
+        setInRange(playerMouseDistance() <= itemHeld.getRange() && pointedWall.isBreakable());
     }
 
     public Point getGridCoords(){
@@ -111,6 +111,12 @@ public class Camera implements MouseListener, MouseMotionListener {
         return new Point(cellCordsX, cellCordsY);
     }
 
+    public double playerMouseDistance(){
+        Vector2d scr = new Vector2d(ClientThread.instance.scrSize);
+        Vector2d v = new Vector2d(mouse).add(pos).sub(scr.div(2));
+        return v.length();
+    }
+
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {}
 
@@ -126,7 +132,7 @@ public class Camera implements MouseListener, MouseMotionListener {
         int cellCordsX = cellCords.x;
         int cellCordsY = cellCords.y;
 
-        double cursorToPlayerDistance = getOffset().length();
+        double cursorToPlayerDistance = playerMouseDistance();
 
         synchronized (world.getState()) {
             if (itemHeld instanceof Pickaxe pickaxe) {

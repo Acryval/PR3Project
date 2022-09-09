@@ -94,28 +94,27 @@ public class World {
         for(Packet data : packets) {
             switch (data.getType()) {
                 case login -> {
-                    if(isServerWorld){
-                        LoginPacket p = (LoginPacket)data;
-                        if(!p.getUsername().equals(ClientThread.instance.getUsername())) {
-                            if (!state.players.containsKey(p.getUsername())) {
-                                ItemBar itemBar = new ItemBar(10, 10, (1400 - 50) / 2, (900 - 100) / 2, 10, 50, 50, 10, 0);
-                                Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
-                                player.getItemBar().addItem(new Pickaxe());
-                                player.getItemBar().addItem(new Block());
-                                synchronized (state) {
-                                    state.players.put(p.getUsername(), player);
-                                }
-                            }
-                            state.players.get(p.getUsername()).setLoggedIn(true);
+                    LoginPacket p = (LoginPacket)data;
+                    if (!state.players.containsKey(p.getUsername())) {
+                        ItemBar itemBar = new ItemBar(10, 10, (1400 - 50) / 2, (900 - 100) / 2, 10, 50, 50, 10, 0);
+                        Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
+                        player.getItemBar().addItem(new Pickaxe());
+                        player.getItemBar().addItem(new Block());
+                        synchronized (state) {
+                            state.players.put(p.getUsername(), player);
                         }
+                    }
+                    state.players.get(p.getUsername()).setLoggedIn(true);
+                    if(isServerWorld) {
+                        ServerThread.instance.getNetworkManager().broadcast(p);
                     }
                 }
                 case logout -> {
+                    LogoutPacket p = (LogoutPacket)data;
+                    if(state.players.containsKey(p.getUsername())){
+                        state.players.get(p.getUsername()).setLoggedIn(false);
+                    }
                     if(isServerWorld) {
-                        LogoutPacket p = (LogoutPacket)data;
-                        if(state.players.containsKey(p.getUsername())){
-                            state.players.get(p.getUsername()).setLoggedIn(false);
-                        }
                         logout = true;
                     }
                 }
@@ -149,17 +148,20 @@ public class World {
         List<PacketType> updatePackets = new ArrayList<>();
 
         synchronized (state) {
-            if(!isServerWorld){
+            if(isServerWorld){
+                for (Map.Entry<String, Player> player : state.players.entrySet()) {
+                    player.getValue().update(state, dtime);
+                }
+            }else{
                 localPlayer.update(state, dtime);
-            }
-
-            for (Map.Entry<String, Player> player : state.players.entrySet()) {
-                player.getValue().update(state, dtime);
+                for (Map.Entry<String, Player> player : state.players.entrySet()) {
+                    if(!player.getKey().equals(ClientThread.instance.getUsername()))
+                        player.getValue().update(state, dtime);
+                }
             }
         }
 
         if(isServerWorld) {
-
             ServerThread.instance.getNetworkManager().broadcast(preparePackets(updatePackets));
         }
     }
@@ -169,7 +171,8 @@ public class World {
             localPlayer.draw(g);
             synchronized (state) {
                 for (Map.Entry<String, Player> player : state.players.entrySet()) {
-                    player.getValue().draw(g);
+                    if(!player.getKey().equals(ClientThread.instance.getUsername()))
+                        player.getValue().draw(g);
                 }
                 for (Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
                     wall.getValue().draw(g);
