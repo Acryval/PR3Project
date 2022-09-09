@@ -1,28 +1,38 @@
 opis ogólny:
 gra 2d w stylu terraria (kwadratowe bloki)
 możliwość kopania bloków (moze także budowanie)
-cel podstawowy - dostać się do jądra Ziemi
+cel podstawowy - 'dostać się do jądra Ziemi'
 przez warstwy materiałów miękkich do kamieni powiększającej się twardości,
-lochy z potworami czy pogarszające się warunki (ciepło jądra ziemi, przemieszczające się warstwy skał, trzęsienia ziemi (nwm co, rzucam słowa na wiatr))
-
-jestem weebem dlatego myślę o animu Made in Abyss jako taki klimat który chciałbym osiągnąć
 
 zachęcam do zmian / nowości / co dodać / co odrzucić z miejsca
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   W trakcie   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
 
 Główny podział programu
     - część GUI+IO (klient logiczny)
         * rysowanie świata
             jakiś podział świata na części w których gracz może się znajdować
             żeby jak najbardziej ograniczyć rysowanie czegoś co nie będzie widoczne
-        * obsługa klawiatury i myszy
         * komunikacja z serwerem logicznym
     - część obsługi fizyki i mechanik (serwer logiczny)
         * określenie wyglądu świata i elementów na nim się znajdujących
         * generacja świata
-        * poruszanie się
-        * mechanika kopania
         * mechanika walki (do obmyślenia)
         * komunikacja z klientem logicznym
+    - część bazy danych (nwm po co nam to tak na prawdę)
+        * model komunikacji z bazą danych
+        * zapisywanie ważnych informacji (jeszcze do ustalenia)
+            zapis stanu świata
+            statyczne info tj aktualna konfiguracja (?)
+            profile użytkowników i logowanie się (??)
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   Zrobione   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
+
+    - część GUI+IO (klient logiczny)
+        * obsługa klawiatury i myszy
+    - część obsługi fizyki i mechanik (serwer logiczny)
+        * poruszanie się
+        * mechanika kopania
     - część sieciowa
         * model komunikacji lokalnej + sieciowej
             proponuję rozwiązanie a'la minecraft 1.0+ to jest
@@ -38,12 +48,7 @@ Główny podział programu
 
             wymagałoby to rozdzielenie programu na co najmniej 2 wątki (kl i srw)
             i zapewnienie poprawnej komunikacji między nimi
-    - część bazy danych (nwm po co nam to tak na prawdę)
-        * model komunikacji z bazą danych
-        * zapisywanie ważnych informacji (jeszcze do ustalenia)
-            zapis stanu świata
-            statyczne info tj aktualna konfiguracja (?)
-            profile użytkowników i logowanie się (??)
+
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ODRZUCONE   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ //
 
