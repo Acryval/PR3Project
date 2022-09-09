@@ -4,6 +4,7 @@ import prj.ClientThread;
 import prj.ServerThread;
 import prj.log.Logger;
 import prj.net.packet.Packet;
+import prj.net.packet.system.LoginPacket;
 import prj.net.packet.system.LogoutPacket;
 import prj.net.packet.world.GetWorldStatePacket;
 
@@ -91,7 +92,7 @@ public class ClientNetworkManager extends Thread {
             running = true;
             this.start();
 
-            send(new GetWorldStatePacket());
+            send(new LoginPacket(ClientThread.instance.getUsername()));
         }catch (IOException e){
             logger.err("cannot connect to " + serverAddress + ", " + e.getMessage());
 
@@ -103,7 +104,7 @@ public class ClientNetworkManager extends Thread {
     public void disconnect() {
         if(serverSocket != null && !serverSocket.isClosed()){
             logger.out("disconnecting from " + new InetSocketAddress(serverSocket.getInetAddress(), serverSocket.getPort()));
-            send(new LogoutPacket());
+            send(new LogoutPacket(ClientThread.instance.getUsername()));
         }
 
         serverSocket = null;

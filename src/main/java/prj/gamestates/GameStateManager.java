@@ -36,7 +36,7 @@ public class GameStateManager extends JPanel {
 
         Dimension dim = new Dimension(width, height);
 
-        setBackground(Color.white);
+        setBackground(Color.LIGHT_GRAY);
         setPreferredSize(dim);
         setSize(dim);
         setFocusable(true);

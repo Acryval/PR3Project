@@ -1,14 +1,12 @@
-package prj.net.packet.system;
+package prj.net.packet.gamestate;
 
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
 
-import java.net.InetSocketAddress;
-
-public class LogoutPacket extends Packet {
+public class SetUsernamePacket extends Packet {
     private final String username;
-    public LogoutPacket(String username) {
-        super(PacketType.logout);
+    public SetUsernamePacket(String username) {
+        super(PacketType.setUsername);
         this.username = username;
     }
 

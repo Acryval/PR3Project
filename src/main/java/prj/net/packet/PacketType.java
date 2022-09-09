@@ -6,6 +6,7 @@ public enum PacketType {
     multiPacket,
 
     // endpoint packets
+    login,
     logout,
     serverShutdown,
 
@@ -24,5 +25,8 @@ public enum PacketType {
 
     // game state packets
     scrDimension,
-    passData
+    passData,
+    setUsername,
+    startServer,
+    connectToServer
 }

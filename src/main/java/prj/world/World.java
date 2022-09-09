@@ -1,18 +1,25 @@
 package prj.world;
 
-import org.joml.Vector2d;
 import prj.ClientThread;
 import prj.ServerThread;
+import prj.entity.Player;
+import prj.item.Block;
+import prj.item.ItemBar;
+import prj.item.Pickaxe;
 import prj.log.Logger;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
-import prj.net.packet.player.PlayerMovePacket;
-import prj.net.packet.player.PlayerPosPacket;
+import prj.net.packet.system.LoginPacket;
+import prj.net.packet.system.LogoutPacket;
 import prj.net.packet.world.WorldStatePacket;
+import prj.wall.DefaultBreakableWall;
+import prj.wall.DefaultTransparentWall;
+import prj.wall.Wall;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class World {
     private final Logger logger = new Logger("");
@@ -47,7 +54,24 @@ public class World {
     }
 
     public void generateWorld(){
-        state.getPlayer().setPos(new Vector2d(ClientThread.instance.getWidth(), ClientThread.instance.getHeight()).div(2));
+        for(int i = -500 ; i < 1300 ; i += 50) {
+            for(int j = -500 ; j < 1100 ; j += 50) {
+                state.getWallsByCords().put(new Point(i, j), new DefaultTransparentWall(i, j));
+            }
+        }
+        for(int i = -50 ; i < 800 ; i += 50) {
+            state.getWallsByCords().put(new Point(i ,600), new DefaultBreakableWall(i, 600));
+        }
+
+        state.getWallsByCords().put(new Point(0, 550), new DefaultBreakableWall(0, 550));
+        state.getWallsByCords().put(new Point(-50, 500), new DefaultBreakableWall(-50, 500));
+        state.getWallsByCords().put(new Point(-100, 450), new DefaultBreakableWall(-100, 450));
+        state.getWallsByCords().put(new Point(-150, 400), new DefaultBreakableWall(-150, 400));
+        state.getWallsByCords().put(new Point(200, 550), new DefaultBreakableWall(200, 550));
+        state.getWallsByCords().put(new Point(250, 550), new DefaultBreakableWall(250, 550));
+
+        state.getWallsByCords().put(new Point(500, 400), new DefaultBreakableWall(500, 400));
+        state.getWallsByCords().put(new Point(550, 400), new DefaultBreakableWall(550, 400));
     }
 
     public boolean applyPacketData(List<Packet> packets){
@@ -56,8 +80,25 @@ public class World {
         boolean logout = false;
         for(Packet data : packets) {
             switch (data.getType()) {
+                case login -> {
+                    if(isServerWorld){
+                        LoginPacket p = (LoginPacket)data;
+                        if(!state.getPlayers().containsKey(p.getUsername())){
+                            ItemBar itemBar = new ItemBar(10, 10, (1400 - 50) / 2, (900 - 100) / 2, 10, 50, 50, 10, 0);
+                            Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
+                            player.getItemBar().addItem(new Pickaxe());
+                            player.getItemBar().addItem(new Block());
+                            state.getPlayers().put(p.getUsername(), player);
+                        }
+                        state.getPlayers().get(p.getUsername()).setLoggedIn(true);
+                    }
+                }
                 case logout -> {
                     if(isServerWorld) {
+                        LogoutPacket p = (LogoutPacket)data;
+                        if(state.getPlayers().containsKey(p.getUsername())){
+                            state.getPlayers().get(p.getUsername()).setLoggedIn(false);
+                        }
                         logout = true;
                     }
                 }
@@ -67,14 +108,6 @@ public class World {
                     }
                 }
                 case worldState -> ((WorldStatePacket)data).unpackInto(state);
-                case playerMove -> {
-                    PlayerMovePacket p = (PlayerMovePacket)data;
-                    state.getPlayer().setMoving(p.getDirection(), p.value());
-                }
-                case playerPos -> {
-                    PlayerPosPacket p = (PlayerPosPacket)data;
-                    state.getPlayer().setPos(p.getPos());
-                }
                 default -> {}
             }
         }
@@ -88,7 +121,6 @@ public class World {
         for (PacketType pt : returnPacketTypes) {
             switch (pt) {
                 case worldState -> out.add(new WorldStatePacket(state));
-                case playerPos -> out.add(new PlayerPosPacket(state.getPlayer().getPos()));
                 default -> {}
             }
         }
@@ -98,12 +130,12 @@ public class World {
 
     public void updateState(double dtime){
         List<PacketType> updatePackets = new ArrayList<>();
-        Vector2d ppos = new Vector2d(state.getPlayer().getPos());
 
-        state.getPlayer().update(dtime);
+        for(Map.Entry<String, Player> player : state.getPlayers().entrySet()){
+            player.getValue().update(state, dtime);
+        }
 
         if(isServerWorld) {
-            if(!state.getPlayer().getPos().equals(ppos, 0.01)) updatePackets.add(PacketType.playerPos);
 
             ServerThread.instance.getNetworkManager().broadcast(preparePackets(updatePackets));
         }
@@ -111,7 +143,16 @@ public class World {
 
     public void draw(Graphics2D g){
         if(!isServerWorld) {
-            state.getPlayer().draw(g);
+            for(Map.Entry<String, Player> player : state.getPlayers().entrySet()){
+                player.getValue().draw(g);
+            }
+            for(Map.Entry<Point, Wall> wall : state.getWallsByCords().entrySet()) {
+                wall.getValue().draw(g);
+            }
         }
+    }
+
+    public Player getPlayer(String username){
+        return state.getPlayers().get(username);
     }
 }

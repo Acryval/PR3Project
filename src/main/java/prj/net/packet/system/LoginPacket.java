@@ -3,13 +3,12 @@ package prj.net.packet.system;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
 
-import java.net.InetSocketAddress;
-
-public class LogoutPacket extends Packet {
+public class LoginPacket extends Packet {
     private final String username;
-    public LogoutPacket(String username) {
-        super(PacketType.logout);
+    public LoginPacket(String username) {
+        super(PacketType.login);
         this.username = username;
+        expect(PacketType.worldState);
     }
 
     public String getUsername() {

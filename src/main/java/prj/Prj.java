@@ -1,7 +1,10 @@
 package prj;
 
 import prj.gamestates.GameStateManager;
+import prj.net.packet.gamestate.PassDataPacket;
 import prj.net.packet.gamestate.ScreenDimensionPacket;
+import prj.net.packet.gamestate.SetUsernamePacket;
+import prj.net.packet.gamestate.StartServerPacket;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,7 +54,7 @@ public class Prj extends JFrame{
             }
         });
 
-        gsm.setState("client", new ScreenDimensionPacket(width, height));
+        gsm.setState("client", new SetUsernamePacket("Acryval"), new StartServerPacket(), new PassDataPacket(), new ScreenDimensionPacket(width, height));
         gsm.run();
     }
 
