@@ -33,8 +33,8 @@ public class Player implements Serializable {
         this.startingPosY = y;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.width = 50;
-        this.height = 100;
+        this.width = 45;
+        this.height = 90;
         this.hitbox = new Rectangle(this.x, this.y, this.width, this.height);
         this.image = "player";
         this.itemBar = itemBar;
@@ -184,7 +184,7 @@ public class Player implements Serializable {
 
         if(keyUp) {
             hitbox.y++;
-            for(Map.Entry<Point, Wall> wall : state.getWallsByCords().entrySet()) {
+            for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
                 if(wall.getValue().getHitbox().intersects(hitbox) && wall.getValue().isCollision()) {
                     velocityY = -6;
                 }
@@ -194,7 +194,7 @@ public class Player implements Serializable {
         velocityY += 0.3;
 
         hitbox.x += velocityX;
-        for(Map.Entry<Point, Wall> wall : state.getWallsByCords().entrySet()) {
+        for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
             if(hitbox.intersects(wall.getValue().getHitbox()) && wall.getValue().isCollision()) {
                 hitbox.x -= velocityX;
                 while(!wall.getValue().getHitbox().intersects(hitbox)) {
@@ -207,7 +207,7 @@ public class Player implements Serializable {
         }
 
         hitbox.y += velocityY;
-        for(Map.Entry<Point, Wall> wall : state.getWallsByCords().entrySet()) {
+        for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
             if(hitbox.intersects(wall.getValue().getHitbox()) && wall.getValue().isCollision()) {
                 hitbox.y -= velocityY;
                 while(!wall.getValue().getHitbox().intersects(hitbox)) {
@@ -242,15 +242,16 @@ public class Player implements Serializable {
         /*panel.getMouseCursor().setX(panel.getMouseCursor().getX()+ (int)velocityX);
         panel.getMouseCursor().setY(panel.getMouseCursor().getY() + (int)velocityY);*/
 
-        itemBar.setX(x - startingPosX + 10);
-        itemBar.setY(y - startingPosY + 10);
-        itemBar.setPlayerPosX(x);
-        itemBar.setPlayerPosY(y);
-        if(keyRight) {
-            itemBar.setFacingRight(true);
-        }
-        else if(keyLeft){
-            itemBar.setFacingRight(false);
+        if(itemBar != null) {
+            itemBar.setX(x - startingPosX + 10);
+            itemBar.setY(y - startingPosY + 10);
+            itemBar.setPlayerPosX(x);
+            itemBar.setPlayerPosY(y);
+            if (keyRight) {
+                itemBar.setFacingRight(true);
+            } else if (keyLeft) {
+                itemBar.setFacingRight(false);
+            }
         }
     }
 
