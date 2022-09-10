@@ -26,7 +26,7 @@ import java.awt.event.*;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-public class ClientThread extends GameState implements MouseListener {
+public class ClientThread extends GameState {
     public static ClientThread instance = null;
 
     private final Logger logger = new Logger("");
@@ -39,7 +39,6 @@ public class ClientThread extends GameState implements MouseListener {
 
     private Font defaultFont;
     private String username;
-    private Player localPlayer;
 
     @Override
     public GameState init(List<Packet> dataIn) {
@@ -50,7 +49,6 @@ public class ClientThread extends GameState implements MouseListener {
 
         defaultFont = new Font("Arial", Font.PLAIN, 11);
         scrSize = new Vector2i();
-        localPlayer = null;
 
         world = new World();
 
@@ -60,13 +58,9 @@ public class ClientThread extends GameState implements MouseListener {
 
         loop: for(Packet data : dataIn){
             switch (data.getType()){
-                case setUsername -> {
-                    this.username = ((SetUsernamePacket)data).getUsername();
-                }
+                case setUsername -> this.username = ((SetUsernamePacket)data).getUsername();
                 case startServer -> startServer = true;
-                case connectToServer -> {
-                    address = ((ConnectToServerPacket)data).getAddress();
-                }
+                case connectToServer -> address = ((ConnectToServerPacket)data).getAddress();
                 case passData -> {
                     break loop;
                 }
@@ -80,7 +74,6 @@ public class ClientThread extends GameState implements MouseListener {
         cam.attach();
 
         GameStateManager.instance.addMouseListener(cam);
-        GameStateManager.instance.addMouseListener(this);
         GameStateManager.instance.addMouseMotionListener(cam);
 
         if(startServer) {
@@ -109,8 +102,7 @@ public class ClientThread extends GameState implements MouseListener {
         if(paused) return;
 
         world.updateState(dt);
-        localPlayer = world.getPlayer(username);
-        cam.update(world.getState(), localPlayer);
+        cam.update(world.getState(), world.getLocalPlayer());
     }
 
     @Override
@@ -127,7 +119,6 @@ public class ClientThread extends GameState implements MouseListener {
     public List<Packet> unload(List<Packet> endData) {
         shutdown();
         GameStateManager.instance.removeMouseListener(cam);
-        GameStateManager.instance.removeMouseListener(this);
         GameStateManager.instance.removeMouseMotionListener(cam);
         return endData;
     }
@@ -168,97 +159,97 @@ public class ClientThread extends GameState implements MouseListener {
         am.put("pw", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).setKeyUp(true);
+                world.getLocalPlayer().setKeyUp(true);
             }
         });
         am.put("rw", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).setKeyUp(false);
+                world.getLocalPlayer().setKeyUp(false);
             }
         });
         am.put("pa", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).setKeyLeft(true);
+                world.getLocalPlayer().setKeyLeft(true);
             }
         });
         am.put("ra", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).setKeyLeft(false);
+                world.getLocalPlayer().setKeyLeft(false);
             }
         });
         am.put("pd", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).setKeyRight(true);
+                world.getLocalPlayer().setKeyRight(true);
             }
         });
         am.put("rd", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).setKeyRight(false);
+                world.getLocalPlayer().setKeyRight(false);
             }
         });
         am.put("p0", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(9);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(9);
             }
         });
         am.put("p1", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(0);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(0);
             }
         });
         am.put("p2", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(1);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(1);
             }
         });
         am.put("p3", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(2);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(2);
             }
         });
         am.put("p4", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(3);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(3);
             }
         });
         am.put("p5", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(4);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(4);
             }
         });
         am.put("p6", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(5);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(5);
             }
         });
         am.put("p7", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(6);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(6);
             }
         });
         am.put("p8", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(7);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(7);
             }
         });
         am.put("p9", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getPlayer(username).getItemBar().setInHandItemIndex(8);
+                world.getLocalPlayer().getItemBar().setInHandItemIndex(8);
             }
         });
     }
@@ -282,8 +273,7 @@ public class ClientThread extends GameState implements MouseListener {
         g.translate(off.x, off.y);
 
         world.draw(g);
-        if(localPlayer != null)
-            localPlayer.getItemBar().draw(g);
+        world.getLocalPlayer().getItemBar().draw(g);
         cam.draw(g);
     }
 
@@ -299,61 +289,5 @@ public class ClientThread extends GameState implements MouseListener {
 
     public Camera getCam() {
         return cam;
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        Item itemHeld = localPlayer.getItemBar().getHeldItem();
-        if(itemHeld == null) return;
-
-        Point cellCords = cam.getGridCoords();
-        int cellCordsX = cellCords.x;
-        int cellCordsY = cellCords.y;
-
-        double cursorToPlayerDistance = cam.getOffset().length();
-
-        if(itemHeld instanceof Pickaxe pickaxe) {
-            if(world.getState().getWallsByCords().get(cellCords) == null) return;
-            if(world.getState().getWallsByCords().get(cellCords).isBreakable() && cursorToPlayerDistance <= pickaxe.getRange()) {
-                world.getState().getWallsByCords().get(cellCords).setDurability(world.getState().getWallsByCords().get(cellCords).getDurability() - 10);
-                if(world.getState().getWallsByCords().get(cellCords).getDurability() <= 0) {
-                    world.getState().getWallsByCords().put(new Point(cellCordsX, cellCordsY), new DefaultTransparentWall(cellCordsX, cellCordsY));
-                }
-            }
-        }
-        else if(itemHeld instanceof Block block) {
-            boolean isBlockNeighbour = false;
-
-            Wall w = world.getState().getWallsByCords().get(new Point(cellCordsX - 50, cellCordsY));
-            if(w != null && w.isCollision()) isBlockNeighbour = true;
-            else w = world.getState().getWallsByCords().get(new Point(cellCordsX + 50, cellCordsY));
-            if(!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-            else w = world.getState().getWallsByCords().get(new Point(cellCordsX, cellCordsY - 50));
-            if(!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-            else w = world.getState().getWallsByCords().get(new Point(cellCordsX, cellCordsY + 50));
-            if(!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-
-            boolean isPlayerCollision = localPlayer.getHitbox().intersects(new Rectangle(cellCordsX, cellCordsY, 50, 50));
-
-            if(isBlockNeighbour && !isPlayerCollision && cursorToPlayerDistance <= block.getRange()) {
-                world.getState().getWallsByCords().put(cellCords, new DefaultBreakableWall(cellCordsX, cellCordsY));
-            }
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
     }
 }

@@ -6,7 +6,11 @@ import org.joml.Vector2dc;
 import org.joml.Vector2i;
 import prj.ClientThread;
 import prj.entity.Player;
+import prj.item.Block;
 import prj.item.Item;
+import prj.item.Pickaxe;
+import prj.wall.DefaultBreakableWall;
+import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
 
 import java.awt.*;
@@ -74,12 +78,12 @@ public class Camera implements MouseListener, MouseMotionListener {
             return;
         }
 
-        Wall pointedWall = state.getWallsByCords().get(getGridCoords());
+        Wall pointedWall = state.wallsByCords.get(getGridCoords());
         if(pointedWall == null) {
             return;
         }
 
-        setInRange(offset.length() <= itemHeld.getRange() && pointedWall.isBreakable());
+        setInRange(playerMouseDistance() <= itemHeld.getRange() && pointedWall.isBreakable());
     }
 
     public Point getGridCoords(){
@@ -107,12 +111,57 @@ public class Camera implements MouseListener, MouseMotionListener {
         return new Point(cellCordsX, cellCordsY);
     }
 
+    public double playerMouseDistance(){
+        Vector2d scr = new Vector2d(ClientThread.instance.scrSize);
+        Vector2d v = new Vector2d(mouse).add(pos).sub(scr.div(2));
+        return v.length();
+    }
+
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {}
 
     @Override
     public void mousePressed(MouseEvent mouseEvent) {
         mousePressed = true;
+
+        World world = ClientThread.instance.getWorld();
+        Item itemHeld = world.getLocalPlayer().getItemBar().getHeldItem();
+        if(itemHeld == null) return;
+
+        Point cellCords = getGridCoords();
+        int cellCordsX = cellCords.x;
+        int cellCordsY = cellCords.y;
+
+        double cursorToPlayerDistance = playerMouseDistance();
+
+        synchronized (world.getState()) {
+            if (itemHeld instanceof Pickaxe pickaxe) {
+                if (world.getState().wallsByCords.get(cellCords) == null) return;
+                if (world.getState().wallsByCords.get(cellCords).isBreakable() && cursorToPlayerDistance <= pickaxe.getRange()) {
+                    world.getState().wallsByCords.get(cellCords).setDurability(world.getState().wallsByCords.get(cellCords).getDurability() - 10);
+                    if (world.getState().wallsByCords.get(cellCords).getDurability() <= 0) {
+                        world.getState().wallsByCords.put(new Point(cellCordsX, cellCordsY), new DefaultTransparentWall(cellCordsX, cellCordsY));
+                    }
+                }
+            } else if (itemHeld instanceof Block block) {
+                boolean isBlockNeighbour = false;
+
+                Wall w = world.getState().wallsByCords.get(new Point(cellCordsX - 50, cellCordsY));
+                if (w != null && w.isCollision()) isBlockNeighbour = true;
+                else w = world.getState().wallsByCords.get(new Point(cellCordsX + 50, cellCordsY));
+                if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                else w = world.getState().wallsByCords.get(new Point(cellCordsX, cellCordsY - 50));
+                if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                else w = world.getState().wallsByCords.get(new Point(cellCordsX, cellCordsY + 50));
+                if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+
+                boolean isPlayerCollision = world.getLocalPlayer().getHitbox().intersects(new Rectangle(cellCordsX, cellCordsY, 50, 50));
+
+                if (isBlockNeighbour && !isPlayerCollision && cursorToPlayerDistance <= block.getRange()) {
+                    world.getState().wallsByCords.put(cellCords, new DefaultBreakableWall(cellCordsX, cellCordsY));
+                }
+            }
+        }
     }
 
     @Override
