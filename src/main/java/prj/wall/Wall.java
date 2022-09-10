@@ -17,8 +17,9 @@ public abstract class Wall implements Serializable {
     private boolean isCollision;
     private Rectangle hitbox;
     private ArrayList<String> image = new ArrayList<>();
+    private String type;
 
-    public Wall(int x, int y, int width, int height, int durability, boolean isBreakable, boolean isCollision) {
+    public Wall(int x, int y, int width, int height, int durability, boolean isBreakable, boolean isCollision, String type) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -27,7 +28,16 @@ public abstract class Wall implements Serializable {
         this.isBreakable = isBreakable;
         this.isCollision = isCollision;
         hitbox = new Rectangle(x, y, width, height);
+        this.type = type;
         loadImage();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     /* Settery i gettery */

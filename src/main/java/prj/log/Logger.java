@@ -75,7 +75,6 @@ public class Logger {
     public void testinfo(String s){log(LogType.TEST, s);}
 
     public void announcePackets(InetAddress address, String prefix, List<Packet> packets){
-        if(!Prj.LOG_INFO) return;
         StringBuilder s = new StringBuilder(prefix).append(" {");
 
         if(packets != null){

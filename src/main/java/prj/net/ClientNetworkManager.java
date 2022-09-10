@@ -6,7 +6,7 @@ import prj.log.Logger;
 import prj.net.packet.Packet;
 import prj.net.packet.system.LoginPacket;
 import prj.net.packet.system.LogoutPacket;
-import prj.net.packet.world.GetWorldStatePacket;
+import prj.world.UserSpecificData;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -120,7 +120,8 @@ public class ClientNetworkManager extends Thread {
             try {
                 if (serverSocket != null && serverSocket.getInputStream().available() > 0) {
                     receivedPackets.addAll(Packet.receive(logger, serverSocket));
-                    if (ClientThread.instance.getWorld().applyPacketData(receivedPackets)) {
+                    UserSpecificData res = ClientThread.instance.getWorld().applyPacketData(receivedPackets);
+                    if (res.isLogout()) {
                         disconnect();
                     }
                     receivedPackets.clear();

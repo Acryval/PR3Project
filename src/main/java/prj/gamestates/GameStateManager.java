@@ -99,10 +99,10 @@ public class GameStateManager extends JPanel {
                 GameState unloadedState = loadedStates.remove(name);
                 return unloadedState.unload(endData);
             }else{
-                logger.warn("trying to unloaded an unloaded state: " + name);
+                logger.warn("trying to unload an unloaded state: " + name);
             }
         }else{
-            logger.err("trying to unloaded an unregistered state: " + name);
+            logger.err("trying to unload an unregistered state: " + name);
         }
         return new ArrayList<>();
     }

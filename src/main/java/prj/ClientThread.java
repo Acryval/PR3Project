@@ -11,6 +11,7 @@ import prj.log.Logger;
 import prj.net.ClientNetworkManager;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
+import prj.net.packet.entity.player.PlayerMovePacket;
 import prj.net.packet.gamestate.ConnectToServerPacket;
 import prj.net.packet.gamestate.ScreenDimensionPacket;
 import prj.net.packet.gamestate.SetUsernamePacket;
@@ -18,6 +19,7 @@ import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
 import prj.world.Camera;
+import prj.world.Direction;
 import prj.world.World;
 
 import javax.swing.*;
@@ -159,37 +161,55 @@ public class ClientThread extends GameState {
         am.put("pw", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getLocalPlayer().setKeyUp(true);
+                if(!world.getLocalPlayer().isKeyUp()) {
+                    world.getLocalPlayer().setKeyUp(true);
+                    networkManager.send(new PlayerMovePacket(username, Direction.UP, true));
+                }
             }
         });
         am.put("rw", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getLocalPlayer().setKeyUp(false);
+                if(world.getLocalPlayer().isKeyUp()) {
+                    world.getLocalPlayer().setKeyUp(false);
+                    networkManager.send(new PlayerMovePacket(username, Direction.UP, false));
+                }
             }
         });
         am.put("pa", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getLocalPlayer().setKeyLeft(true);
+                if(!world.getLocalPlayer().isKeyLeft()) {
+                    world.getLocalPlayer().setKeyLeft(true);
+                    networkManager.send(new PlayerMovePacket(username, Direction.LEFT, true));
+                }
             }
         });
         am.put("ra", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getLocalPlayer().setKeyLeft(false);
+                if(world.getLocalPlayer().isKeyLeft()) {
+                    world.getLocalPlayer().setKeyLeft(false);
+                    networkManager.send(new PlayerMovePacket(username, Direction.LEFT, false));
+                }
             }
         });
         am.put("pd", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getLocalPlayer().setKeyRight(true);
+                if(!world.getLocalPlayer().isKeyRight()) {
+                    world.getLocalPlayer().setKeyRight(true);
+                    networkManager.send(new PlayerMovePacket(username, Direction.RIGHT, true));
+                }
             }
         });
         am.put("rd", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                world.getLocalPlayer().setKeyRight(false);
+                if(world.getLocalPlayer().isKeyRight()) {
+                    world.getLocalPlayer().setKeyRight(false);
+                    networkManager.send(new PlayerMovePacket(username, Direction.RIGHT, false));
+                }
             }
         });
         am.put("p0", new AbstractAction() {
@@ -289,5 +309,9 @@ public class ClientThread extends GameState {
 
     public Camera getCam() {
         return cam;
+    }
+
+    public ClientNetworkManager getNetworkManager() {
+        return networkManager;
     }
 }

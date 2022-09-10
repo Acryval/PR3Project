@@ -5,6 +5,8 @@ import prj.log.Logger;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
 import prj.net.packet.system.ServerShutdownPacket;
+import prj.world.UserSpecificData;
+import prj.world.PreparedPackets;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -32,6 +34,7 @@ public class ServerNetworkManager extends Thread {
     }
 
     public void broadcast(List<Packet> packets){
+        if(packets.size() == 0) return;
         synchronized (clients) {
             for (Socket client : clients) {
                 Packet.send(logger, client, packets);
@@ -67,8 +70,8 @@ public class ServerNetworkManager extends Thread {
         listener.start();
 
         List<Socket> clientLoggingOut = new ArrayList<>();
-        List<Packet> receivedPackets = new ArrayList<>();
-        List<PacketType> expectedPackets = new ArrayList<>();
+        UserSpecificData usd;
+        PreparedPackets pp;
 
         while(running){
             for (Socket s : clients) {
@@ -82,19 +85,16 @@ public class ServerNetworkManager extends Thread {
 
                 try {
                     if (s.getInputStream().available() > 0) {
-                        receivedPackets.addAll(Packet.receive(logger, s));
-                        for (Packet p : receivedPackets) {
-                            expectedPackets.addAll(p.getExpectedReturnPackets());
+                        synchronized (clients) {
+                            usd = ServerThread.instance.getWorld().applyPacketData(Packet.receive(logger, s));
+                            if (usd.isLogout()) {
+                                clientLoggingOut.add(s);
+                            }
+
+                            pp = ServerThread.instance.getWorld().preparePackets(usd);
+                            Packet.send(logger, s, pp.getToSend());
                         }
-
-                        if (ServerThread.instance.getWorld().applyPacketData(receivedPackets)) {
-                            clientLoggingOut.add(s);
-                        }
-
-                        Packet.send(logger, s, ServerThread.instance.getWorld().preparePackets(expectedPackets));
-
-                        receivedPackets.clear();
-                        expectedPackets.clear();
+                        broadcast(pp.getToBroadcast());
                     }
                 }catch(IOException e){
                     e.printStackTrace();

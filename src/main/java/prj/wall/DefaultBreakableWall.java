@@ -6,7 +6,7 @@ import java.awt.*;
 public class DefaultBreakableWall extends Wall {
 
     public DefaultBreakableWall(int x, int y) {
-        super(x, y, 50, 50, 100, true, true);
+        super(x, y, 50, 50, 100, true, true, "DefaultBreakableWall");
         super.setHitbox(new Rectangle(x, y, 50, 50));
         loadImage();
     }

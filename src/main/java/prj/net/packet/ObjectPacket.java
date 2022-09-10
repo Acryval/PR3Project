@@ -22,11 +22,6 @@ public class ObjectPacket extends Packet {
         pack(p, "");
     }
 
-    @Override
-    public String getName() {
-        return super.getName() + "{" + targetClass.getName() + "}";
-    }
-
     private void pack(Packable p, String namePrefix){
         for(Field f : p.getClass().getDeclaredFields()){
             if(f.isAnnotationPresent(PacketElement.class)){

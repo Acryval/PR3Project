@@ -17,6 +17,9 @@ public enum PacketType {
     playerMove,
     playerPos,
 
+    // block packets
+    blockBroken,
+    blockPlaced,
 
     // request packets
     getWorldState,

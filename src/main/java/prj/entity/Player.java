@@ -43,6 +43,11 @@ public class Player implements Serializable {
 
     /* Settery i gettery */
 
+    public void setPos(int x, int y){
+        setX(x);
+        setY(y);
+    }
+
     public int getX() {
         return x;
     }

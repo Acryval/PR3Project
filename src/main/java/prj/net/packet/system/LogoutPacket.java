@@ -15,4 +15,9 @@ public class LogoutPacket extends Packet {
     public String getUsername() {
         return username;
     }
+
+    @Override
+    public String getName(){
+        return super.getName() + "{" + getUsername() + "}";
+    }
 }

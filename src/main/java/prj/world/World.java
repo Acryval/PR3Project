@@ -9,15 +9,19 @@ import prj.item.Pickaxe;
 import prj.log.Logger;
 import prj.net.packet.Packet;
 import prj.net.packet.PacketType;
+import prj.net.packet.entity.player.GetPlayerPosPacket;
+import prj.net.packet.entity.player.PlayerMovePacket;
+import prj.net.packet.entity.player.PlayerPosPacket;
 import prj.net.packet.system.LoginPacket;
 import prj.net.packet.system.LogoutPacket;
+import prj.net.packet.world.BlockBrokenPacket;
+import prj.net.packet.world.BlockPlacedPacket;
 import prj.net.packet.world.WorldStatePacket;
 import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -87,11 +91,12 @@ public class World {
         }
     }
 
-    public boolean applyPacketData(List<Packet> packets){
-        if(packets.size() == 0) return false;
+    public UserSpecificData applyPacketData(List<Packet> packets){
+        UserSpecificData res = new UserSpecificData();
+        if(packets.size() == 0) return res;
 
-        boolean logout = false;
         for(Packet data : packets) {
+            res.addExpectedPackets(data.getExpectedReturnPackets());
             switch (data.getType()) {
                 case login -> {
                     LoginPacket p = (LoginPacket)data;
@@ -106,7 +111,7 @@ public class World {
                     }
                     state.players.get(p.getUsername()).setLoggedIn(true);
                     if(isServerWorld) {
-                        ServerThread.instance.getNetworkManager().broadcast(p);
+                        res.storePacket(p);
                     }
                 }
                 case logout -> {
@@ -115,28 +120,140 @@ public class World {
                         state.players.get(p.getUsername()).setLoggedIn(false);
                     }
                     if(isServerWorld) {
-                        logout = true;
+                        res.setLogout(true);
+                        res.storePacket(p);
                     }
                 }
                 case serverShutdown -> {
                     if(!isServerWorld){
-                        logout = true;
+                        res.setLogout(true);
                     }
                 }
-                case worldState -> ((WorldStatePacket)data).unpackInto(state);
+                case worldState -> {
+                    synchronized (state) {
+                        ((WorldStatePacket) data).unpackInto(state);
+                    }
+                }
+                case playerMove -> {
+                    if(isServerWorld) {
+                        PlayerMovePacket p = (PlayerMovePacket) data;
+                        if (state.players.containsKey(p.getUsername())) {
+                            switch (p.getDir()) {
+                                case UP -> state.players.get(p.getUsername()).setKeyUp(p.getValue());
+                                case LEFT -> state.players.get(p.getUsername()).setKeyLeft(p.getValue());
+                                case RIGHT -> state.players.get(p.getUsername()).setKeyRight(p.getValue());
+                                default -> {
+                                }
+                            }
+                        }
+                    }
+                }
+                case playerPos -> {
+                    if(!isServerWorld){
+                        PlayerPosPacket p = (PlayerPosPacket) data;
+                        if(p.getUsername().equals(ClientThread.instance.getUsername())){
+                            localPlayer.setPos(p.getX(), p.getY());
+                        }else{
+                            if(state.players.containsKey(p.getUsername())){
+                                state.players.get(p.getUsername()).setPos(p.getX(), p.getY());
+                            }
+                        }
+
+                    }
+                }
+                case blockBroken -> {
+                    if(isServerWorld){
+                        res.storePacket(data);
+                    }else{
+                        BlockBrokenPacket p = (BlockBrokenPacket) data;
+                        synchronized (state){
+                            state.wallsByCords.remove(p.getPos());
+                        }
+                    }
+                }
+                case blockPlaced -> {
+                    if(isServerWorld){
+                        res.storePacket(data);
+                    }else{
+                        BlockPlacedPacket p = (BlockPlacedPacket) data;
+                        synchronized (state){
+                            state.wallsByCords.put(p.getPos(), p.getWall());
+                        }
+                    }
+                }
+                case getPlayerPos -> {
+                    if(isServerWorld){
+                        res.storePacket(data);
+                    }
+                }
                 default -> {}
             }
         }
 
-        return logout;
+        return res;
     }
 
-    public List<Packet> preparePackets(List<PacketType> returnPacketTypes){
-        List<Packet> out = new ArrayList<>();
+    public PreparedPackets preparePackets(UserSpecificData res){
+        PreparedPackets out = new PreparedPackets();
 
-        for (PacketType pt : returnPacketTypes) {
+        for(Packet data : res.getStoredPackets()){
+            switch(data.getType()){
+                case login, logout, playerPos -> out.addToBroadcast(data);
+                case blockBroken -> {
+                    BlockBrokenPacket p = (BlockBrokenPacket) data;
+                    if(state.wallsByCords.containsKey(p.getPos()) && state.wallsByCords.get(p.getPos()).getType().equals(p.getWall().getType())){
+                        synchronized (state) {
+                            state.wallsByCords.remove(p.getPos());
+                        }
+                        out.addToBroadcast(p);
+                    }else{
+                        out.addToSend(new BlockPlacedPacket(p.getPos(), p.getWall()));
+                    }
+                }
+                case blockPlaced -> {
+                    BlockPlacedPacket p = (BlockPlacedPacket) data;
+                    boolean isBlockNeighbour = false;
+                    int cellCordsX = p.getPos().x;
+                    int cellCordsY = p.getPos().y;
+
+                    synchronized (state) {
+                        Wall w = state.wallsByCords.get(new Point(cellCordsX - 50, cellCordsY));
+                        if (w != null && w.isCollision()) isBlockNeighbour = true;
+                        else w = state.wallsByCords.get(new Point(cellCordsX + 50, cellCordsY));
+                        if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                        else w = state.wallsByCords.get(new Point(cellCordsX, cellCordsY - 50));
+                        if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                        else w = state.wallsByCords.get(new Point(cellCordsX, cellCordsY + 50));
+                        if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+
+                        boolean isPlayerCollision = false;
+                        Rectangle rect = new Rectangle(cellCordsX, cellCordsY, 50, 50);
+                        for (Map.Entry<String, Player> pl : state.players.entrySet()) {
+                            pl.getValue().getHitbox().intersects(rect);
+                        }
+
+                        if (isBlockNeighbour && !isPlayerCollision) {
+                            state.wallsByCords.put(p.getPos(), p.getWall());
+                            out.addToBroadcast(p);
+                        }else{
+                            out.addToSend(new BlockBrokenPacket(p.getPos(), p.getWall()));
+                        }
+                    }
+                }
+                case getPlayerPos -> {
+                    GetPlayerPosPacket p = (GetPlayerPosPacket) data;
+                    if(state.players.containsKey(p.getUsername())){
+                        Player pl = state.players.get(p.getUsername());
+                        out.addToSend(new PlayerPosPacket(p.getUsername(), pl.getX(), pl.getY()));
+                    }
+                }
+                default -> {}
+            }
+        }
+
+        for (PacketType pt : res.getExpectedPackets()) {
             switch (pt) {
-                case worldState -> out.add(new WorldStatePacket(state));
+                case worldState -> out.addToSend(new WorldStatePacket(state));
                 default -> {}
             }
         }
@@ -145,24 +262,24 @@ public class World {
     }
 
     public void updateState(double dtime){
-        List<PacketType> updatePackets = new ArrayList<>();
+        UserSpecificData data = new UserSpecificData();
 
         synchronized (state) {
             if(isServerWorld){
                 for (Map.Entry<String, Player> player : state.players.entrySet()) {
+                    Point p = new Point(player.getValue().getX(), player.getValue().getY());
                     player.getValue().update(state, dtime);
+                    if(player.getValue().getX() != p.x || player.getValue().getY() != p.y){
+                        data.storePacket(new PlayerPosPacket(player.getKey(), player.getValue().getX(), player.getValue().getY()));
+                    }
                 }
             }else{
                 localPlayer.update(state, dtime);
-                for (Map.Entry<String, Player> player : state.players.entrySet()) {
-                    if(!player.getKey().equals(ClientThread.instance.getUsername()))
-                        player.getValue().update(state, dtime);
-                }
             }
         }
 
         if(isServerWorld) {
-            ServerThread.instance.getNetworkManager().broadcast(preparePackets(updatePackets));
+            ServerThread.instance.getNetworkManager().broadcast(preparePackets(data).getToBroadcast());
         }
     }
 

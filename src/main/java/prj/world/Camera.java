@@ -9,6 +9,8 @@ import prj.entity.Player;
 import prj.item.Block;
 import prj.item.Item;
 import prj.item.Pickaxe;
+import prj.net.packet.world.BlockBrokenPacket;
+import prj.net.packet.world.BlockPlacedPacket;
 import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
@@ -137,28 +139,19 @@ public class Camera implements MouseListener, MouseMotionListener {
         synchronized (world.getState()) {
             if (itemHeld instanceof Pickaxe pickaxe) {
                 if (world.getState().wallsByCords.get(cellCords) == null) return;
-                if (world.getState().wallsByCords.get(cellCords).isBreakable() && cursorToPlayerDistance <= pickaxe.getRange()) {
-                    world.getState().wallsByCords.get(cellCords).setDurability(world.getState().wallsByCords.get(cellCords).getDurability() - 10);
-                    if (world.getState().wallsByCords.get(cellCords).getDurability() <= 0) {
-                        world.getState().wallsByCords.put(new Point(cellCordsX, cellCordsY), new DefaultTransparentWall(cellCordsX, cellCordsY));
+                Wall w = world.getState().wallsByCords.get(cellCords);
+                if (w.isBreakable() && cursorToPlayerDistance <= pickaxe.getRange()) {
+                    world.getState().wallsByCords.get(cellCords).setDurability(w.getDurability() - 10);
+                    if (w.getDurability() <= 10) {
+                        world.getState().wallsByCords.remove(new Point(cellCordsX, cellCordsY));
+                        ClientThread.instance.getNetworkManager().send(new BlockBrokenPacket(cellCords, w));
                     }
                 }
             } else if (itemHeld instanceof Block block) {
-                boolean isBlockNeighbour = false;
-
-                Wall w = world.getState().wallsByCords.get(new Point(cellCordsX - 50, cellCordsY));
-                if (w != null && w.isCollision()) isBlockNeighbour = true;
-                else w = world.getState().wallsByCords.get(new Point(cellCordsX + 50, cellCordsY));
-                if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-                else w = world.getState().wallsByCords.get(new Point(cellCordsX, cellCordsY - 50));
-                if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-                else w = world.getState().wallsByCords.get(new Point(cellCordsX, cellCordsY + 50));
-                if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-
-                boolean isPlayerCollision = world.getLocalPlayer().getHitbox().intersects(new Rectangle(cellCordsX, cellCordsY, 50, 50));
-
-                if (isBlockNeighbour && !isPlayerCollision && cursorToPlayerDistance <= block.getRange()) {
-                    world.getState().wallsByCords.put(cellCords, new DefaultBreakableWall(cellCordsX, cellCordsY));
+                if (cursorToPlayerDistance <= block.getRange()) {
+                    Wall w = new DefaultBreakableWall(cellCordsX, cellCordsY);
+                    world.getState().wallsByCords.put(cellCords, w);
+                    ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, w));
                 }
             }
         }

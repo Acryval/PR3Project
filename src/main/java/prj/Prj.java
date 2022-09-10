@@ -1,10 +1,7 @@
 package prj;
 
 import prj.gamestates.GameStateManager;
-import prj.net.packet.gamestate.PassDataPacket;
-import prj.net.packet.gamestate.ScreenDimensionPacket;
-import prj.net.packet.gamestate.SetUsernamePacket;
-import prj.net.packet.gamestate.StartServerPacket;
+import prj.net.packet.gamestate.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -54,7 +52,7 @@ public class Prj extends JFrame{
             }
         });
 
-        gsm.setState("client", new SetUsernamePacket("Acryval"), new StartServerPacket(), new PassDataPacket(), new ScreenDimensionPacket(width, height));
+        gsm.setState("client", new SetUsernamePacket("Acw"), new ConnectToServerPacket(new InetSocketAddress("25.68.34.237", 53912)), new PassDataPacket(), new ScreenDimensionPacket(width, height));
         gsm.run();
     }
 
@@ -80,6 +78,9 @@ public class Prj extends JFrame{
             }
             if(arg.contains("--debug")){
                 Prj.DEBUG = true;
+                if(arg.contains("packet")){
+                    LOG_PACKETS = true;
+                }
             }
             if(arg.contains("--showFps")){
                 Prj.SHOWFPS = true;
