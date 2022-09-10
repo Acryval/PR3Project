@@ -1,5 +1,6 @@
 package prj;
 
+import prj.entity.User;
 import prj.gamestates.GameStateManager;
 import prj.net.packet.gamestate.*;
 
