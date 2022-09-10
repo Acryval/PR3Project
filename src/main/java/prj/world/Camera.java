@@ -179,6 +179,10 @@ public class Camera implements MouseListener, MouseMotionListener {
                 offset.add(temp).sub(dm);
                 dm.set(temp);
             }
+        }else{
+            scrPos.set(mouseEvent.getX(), mouseEvent.getY());
+            offset.set(scrPos).sub(new Vector2i(ClientThread.instance.scrSize).div(2)).div(-5);
+            updateMouse();
         }
     }
 

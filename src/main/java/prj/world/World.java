@@ -229,7 +229,10 @@ public class World {
                         boolean isPlayerCollision = false;
                         Rectangle rect = new Rectangle(cellCordsX, cellCordsY, 50, 50);
                         for (Map.Entry<String, Player> pl : state.players.entrySet()) {
-                            pl.getValue().getHitbox().intersects(rect);
+                            if(pl.getValue().getHitbox().intersects(rect)){
+                                isPlayerCollision = true;
+                                break;
+                            }
                         }
 
                         if (isBlockNeighbour && !isPlayerCollision) {
