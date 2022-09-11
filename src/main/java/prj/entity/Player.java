@@ -1,11 +1,14 @@
 package prj.entity;
 
 import prj.ImgLoader;
+import prj.RotatedIcon;
 import prj.item.ItemBar;
 import prj.wall.Wall;
 import prj.world.WorldState;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -18,6 +21,7 @@ public class Player implements Serializable {
     private int height;
     private double velocityX;
     private double velocityY;
+    private int health;
     private Rectangle hitbox;
     private boolean keyLeft;
     private boolean keyRight;
@@ -33,8 +37,9 @@ public class Player implements Serializable {
         this.startingPosY = y;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.width = 44;
-        this.height = 88;
+        this.health = 100;
+        this.width = 50;
+        this.height = 100;
         this.hitbox = new Rectangle(this.x, this.y, this.width, this.height);
         this.image = "player";
         this.itemBar = itemBar;
@@ -112,6 +117,14 @@ public class Player implements Serializable {
         this.velocityY = velocityY;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
     public Rectangle getHitbox() {
         return hitbox;
     }
@@ -167,7 +180,6 @@ public class Player implements Serializable {
     public void setLoggedIn(boolean loggedIn) {
         this.loggedIn = loggedIn;
     }
-    /* ****** */
 
     public void update(WorldState state, double dt) {
         if(!loggedIn) return;
@@ -201,26 +213,62 @@ public class Player implements Serializable {
         hitbox.x += velocityX;
         for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
             if(hitbox.intersects(wall.getValue().getHitbox()) && wall.getValue().isCollision()) {
-                hitbox.x -= velocityX;
-                while(!wall.getValue().getHitbox().intersects(hitbox)) {
-                    hitbox.x += Math.signum(velocityX);
+                if(!wall.getValue().isDamaging()) {
+                    hitbox.x -= velocityX;
+                    while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                        hitbox.x += Math.signum(velocityX);
+                    }
+                    hitbox.x -= Math.signum(velocityX);
+                    velocityX = 0;
+                    x = hitbox.x;
                 }
-                hitbox.x -= Math.signum(velocityX);
-                velocityX = 0;
-                x = hitbox.x;
+                else {
+                    if(health > 0) {
+                        System.out.println("Gracz otrzymal obrazenia od kolcow (X)");
+                        setHealth(getHealth() - wall.getValue().getDamage());
+                        hitbox.x -= velocityX;
+                        while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                            hitbox.x += Math.signum(velocityX);
+                        }
+                        hitbox.x -= Math.signum(velocityX);
+                        velocityX = -Math.signum(velocityX) * 10;
+                        x = hitbox.x;
+                    }
+                    else {
+                        /* gracz umiera */
+                    }
+                }
             }
         }
 
         hitbox.y += velocityY;
         for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
             if(hitbox.intersects(wall.getValue().getHitbox()) && wall.getValue().isCollision()) {
-                hitbox.y -= velocityY;
-                while(!wall.getValue().getHitbox().intersects(hitbox)) {
-                    hitbox.y += Math.signum(velocityY);
+                if(!wall.getValue().isDamaging()) {
+                    hitbox.y -= velocityY;
+                    while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                        hitbox.y += Math.signum(velocityY);
+                    }
+                    hitbox.y -= Math.signum(velocityY);
+                    velocityY = 0;
+                    y = hitbox.y;
                 }
-                hitbox.y -= Math.signum(velocityY);
-                velocityY = 0;
-                y = hitbox.y;
+                else {
+                    if(health > 0) {
+                        System.out.println("Gracz otrzymal obrazenia od kolcow (Y)");
+                        setHealth(getHealth() - wall.getValue().getDamage());
+                        hitbox.y -= velocityY;
+                        while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                            hitbox.y += Math.signum(velocityY);
+                        }
+                        hitbox.y -= Math.signum(velocityY);
+                        velocityY = -Math.signum(velocityY) * 10;
+                        y = hitbox.y;
+                    }
+                    else {
+                        /* gracz umiera */
+                    }
+                }
             }
         }
 
@@ -229,23 +277,6 @@ public class Player implements Serializable {
 
         hitbox.x = x;
         hitbox.y = y;
-
-        /*
-        itemBar.x = x - startingPosX + 10;
-        itemBar.y = y - startingPosY + 10;
-        itemBar.playerPosX = x;
-        itemBar.playerPosY = y;
-        if(keyRight) {
-            itemBar.isFacingRight = true;
-        }
-        else if(keyLeft){
-            itemBar.isFacingRight = false;
-        }
-        */
-
-        /* kursor wciaz do poprawienia! */
-        /*panel.getMouseCursor().setX(panel.getMouseCursor().getX()+ (int)velocityX);
-        panel.getMouseCursor().setY(panel.getMouseCursor().getY() + (int)velocityY);*/
 
         if(itemBar != null) {
             itemBar.setX(x - startingPosX + 10);
@@ -262,8 +293,12 @@ public class Player implements Serializable {
 
     public void draw(Graphics2D g2d) {
         if(!loggedIn) return;
-        //g2d.setColor(Color.BLACK);
-        //g2d.fillRect(x, y, width, height);
-        g2d.drawImage(ImgLoader.get(image), x, y, null);
+        if(health <= 0) {
+            RotatedIcon ri = new RotatedIcon(new ImageIcon(ImgLoader.get(image)), 90.0) ;
+            ri.paintIcon(null, g2d, x, y);
+        }
+        else {
+            g2d.drawImage(ImgLoader.get(image), x, y, null);
+        }
     }
 }

@@ -8,18 +8,23 @@ import java.awt.*;
 
 public class BlockPlacedPacket extends Packet {
     private final Point pos;
-    private final Wall wall;
-    public BlockPlacedPacket(Point pos, Wall wall) {
+    private final Wall oldWall, newWall;
+    public BlockPlacedPacket(Point pos, Wall oldWall, Wall newWall) {
         super(PacketType.blockPlaced);
         this.pos = pos;
-        this.wall = wall;
+        this.oldWall = oldWall;
+        this.newWall = newWall;
     }
 
     public Point getPos() {
         return pos;
     }
 
-    public Wall getWall() {
-        return wall;
+    public Wall getOldWall() {
+        return oldWall;
+    }
+
+    public Wall getNewWall() {
+        return newWall;
     }
 }

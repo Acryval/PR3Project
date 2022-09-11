@@ -43,10 +43,6 @@ public class GameStateManager extends JPanel {
         setFocusable(true);
         requestFocus();
 
-        BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-        setCursor(blankCursor);
-
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
 
@@ -71,9 +67,6 @@ public class GameStateManager extends JPanel {
         }
     }
 
-    public GameState loadState(String name, Packet...initData){
-        return loadState(name, List.of(initData));
-    }
     public GameState loadState(String name, List<Packet> initData) {
         logger.dbg("loading state: " + name);
         if (!loadedStates.containsKey(name)) {
@@ -107,13 +100,13 @@ public class GameStateManager extends JPanel {
         return new ArrayList<>();
     }
 
-    public void setState(String name, Packet...endData){
+    public void setState(String name, Packet...data){
         if(currentState == null) {
-            currentState = loadState(name, List.of(endData));
+            currentState = loadState(name, List.of(data));
         }else{
             im.clear();
             am.clear();
-            currentState = loadState(name, currentState.unload(endData));
+            currentState = loadState(name, currentState.unload(data));
         }
 
         if(currentState != null) {
@@ -167,7 +160,8 @@ public class GameStateManager extends JPanel {
 
             dt = (double)(frameStart - lastFrameUpdate) / 1000000000;
             updateFPS(dt);
-            currentState.update(dt);
+            if(currentState != null)
+                currentState.update(dt);
             repaint();
 
             lastFrameUpdate = frameStart;

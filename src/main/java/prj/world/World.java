@@ -18,7 +18,7 @@ import prj.net.packet.world.BlockBrokenPacket;
 import prj.net.packet.world.BlockPlacedPacket;
 import prj.net.packet.world.WorldStatePacket;
 import prj.wall.DefaultBreakableWall;
-import prj.wall.DefaultTransparentWall;
+import prj.wall.DefaultSpikeWall;
 import prj.wall.Wall;
 
 import java.awt.*;
@@ -42,11 +42,12 @@ public class World {
         logger.dbg("init end");
     }
 
-    public World() {
+    public World(String name) {
         logger.setName("Client world").dbg("init start");
 
         this.isServerWorld = false;
         this.state = new WorldState();
+        this.state.worldName = name;
 
         generateWorld();
 
@@ -70,11 +71,6 @@ public class World {
         localPlayer = player;
 
         synchronized (state) {
-            for (int i = -500; i < 1300; i += 50) {
-                for (int j = -500; j < 1100; j += 50) {
-                    state.wallsByCords.put(new Point(i, j), new DefaultTransparentWall(i, j));
-                }
-            }
             for (int i = -50; i < 800; i += 50) {
                 state.wallsByCords.put(new Point(i, 600), new DefaultBreakableWall(i, 600));
             }
@@ -88,6 +84,10 @@ public class World {
 
             state.wallsByCords.put(new Point(500, 400), new DefaultBreakableWall(500, 400));
             state.wallsByCords.put(new Point(550, 400), new DefaultBreakableWall(550, 400));
+
+            for (int i = -50; i < 800; i += 50) {
+                state.wallsByCords.put(new Point(i, 1000), new DefaultSpikeWall(i, 1000));
+            }
         }
     }
 
@@ -177,7 +177,11 @@ public class World {
                     }else{
                         BlockPlacedPacket p = (BlockPlacedPacket) data;
                         synchronized (state){
-                            state.wallsByCords.put(p.getPos(), p.getWall());
+                            if(p.getNewWall() == null){
+                                state.wallsByCords.remove(p.getPos());
+                            }else {
+                                state.wallsByCords.put(p.getPos(), p.getNewWall());
+                            }
                         }
                     }
                 }
@@ -207,39 +211,43 @@ public class World {
                         }
                         out.addToBroadcast(p);
                     }else{
-                        out.addToSend(new BlockPlacedPacket(p.getPos(), p.getWall()));
+                        out.addToSend(new BlockPlacedPacket(p.getPos(), null, p.getWall()));
                     }
                 }
                 case blockPlaced -> {
                     BlockPlacedPacket p = (BlockPlacedPacket) data;
                     boolean isBlockNeighbour = false;
+                    boolean isPlayerCollision = false;
                     int cellCordsX = p.getPos().x;
                     int cellCordsY = p.getPos().y;
 
                     synchronized (state) {
-                        Wall w = state.wallsByCords.get(new Point(cellCordsX - 50, cellCordsY));
-                        if (w != null && w.isCollision()) isBlockNeighbour = true;
-                        else w = state.wallsByCords.get(new Point(cellCordsX + 50, cellCordsY));
-                        if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-                        else w = state.wallsByCords.get(new Point(cellCordsX, cellCordsY - 50));
-                        if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
-                        else w = state.wallsByCords.get(new Point(cellCordsX, cellCordsY + 50));
-                        if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                        Wall w = state.wallsByCords.get(p.getPos());
 
-                        boolean isPlayerCollision = false;
-                        Rectangle rect = new Rectangle(cellCordsX, cellCordsY, 50, 50);
-                        for (Map.Entry<String, Player> pl : state.players.entrySet()) {
-                            if(pl.getValue().getHitbox().intersects(rect)){
-                                isPlayerCollision = true;
-                                break;
+                        if(w == null) {
+                            w = state.wallsByCords.get(new Point(cellCordsX - 50, cellCordsY));
+                            if (w != null && w.isCollision()) isBlockNeighbour = true;
+                            else w = state.wallsByCords.get(new Point(cellCordsX + 50, cellCordsY));
+                            if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                            else w = state.wallsByCords.get(new Point(cellCordsX, cellCordsY - 50));
+                            if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                            else w = state.wallsByCords.get(new Point(cellCordsX, cellCordsY + 50));
+                            if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+
+                            Rectangle rect = new Rectangle(cellCordsX, cellCordsY, 50, 50);
+                            for (Map.Entry<String, Player> pl : state.players.entrySet()) {
+                                if (pl.getValue().getHitbox().intersects(rect)) {
+                                    isPlayerCollision = true;
+                                    break;
+                                }
                             }
                         }
 
                         if (isBlockNeighbour && !isPlayerCollision) {
-                            state.wallsByCords.put(p.getPos(), p.getWall());
+                            state.wallsByCords.put(p.getPos(), p.getNewWall());
                             out.addToBroadcast(p);
                         }else{
-                            out.addToSend(new BlockBrokenPacket(p.getPos(), p.getWall()));
+                            out.addToSend(new BlockPlacedPacket(p.getPos(), p.getNewWall(), p.getOldWall()));
                         }
                     }
                 }

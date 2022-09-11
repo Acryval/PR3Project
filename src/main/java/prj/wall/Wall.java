@@ -13,20 +13,22 @@ public abstract class Wall implements Serializable {
     private int width;
     private int height;
     private int durability;
+    private int damage;
     private boolean isBreakable;
     private boolean isCollision;
+    private boolean isDamaging;
     private Rectangle hitbox;
     private ArrayList<String> image = new ArrayList<>();
     private String type;
 
-    public Wall(int x, int y, int width, int height, int durability, boolean isBreakable, boolean isCollision, String type) {
+    public Wall(int x, int y, int width, int height, boolean isBreakable, boolean isCollision, boolean isDamaging, String type) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.durability = durability;
         this.isBreakable = isBreakable;
         this.isCollision = isCollision;
+        this.isDamaging = isDamaging;
         hitbox = new Rectangle(x, y, width, height);
         this.type = type;
         loadImage();
@@ -40,7 +42,6 @@ public abstract class Wall implements Serializable {
         this.type = type;
     }
 
-    /* Settery i gettery */
     public int getX() {
         return x;
     }
@@ -81,6 +82,22 @@ public abstract class Wall implements Serializable {
         this.durability = durability;
     }
 
+    public int getDamage() {
+        return damage;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public boolean isDamaging() {
+        return isDamaging;
+    }
+
+    public void setDamaging(boolean damaging) {
+        isDamaging = damaging;
+    }
+
     public boolean isBreakable() {
         return isBreakable;
     }
@@ -116,54 +133,6 @@ public abstract class Wall implements Serializable {
     public void setImage(ArrayList<String> image) {
         this.image = image;
     }
-    /* ****** */
-
-    /*
-    private void loadImage() {
-        ImageIcon ii = new ImageIcon("BlockPrototype.png");
-        image.add(ii.getImage());
-
-        ii = new ImageIcon("BlockPrototypeBrokenStage1.png");
-        image.add(ii.getImage());
-
-        ii = new ImageIcon("BlockPrototypeBrokenStage2.png");
-        image.add(ii.getImage());
-
-        ii = new ImageIcon("BlockPrototypeBrokenStage3.png");
-        image.add(ii.getImage());
-
-        ii = new ImageIcon("BlockPrototypeBrokenStage4.png");
-        image.add(ii.getImage());
-    }
-    */
-
-    /*
-    public void draw(Graphics2D g2d) {
-        if(this.isCollision) {
-
-            g2d.setColor(Color.BLACK);
-            g2d.drawRect(x, y, width, height);
-            g2d.setColor(Color.WHITE);
-            g2d.fillRect(x + 1, y + 1, width - 1, height - 1);
-
-            if(durability < 20) {
-                g2d.drawImage(image.get(4), x, y, panel);
-            }
-            else if(durability < 40) {
-                g2d.drawImage(image.get(3), x, y, panel);
-            }
-            else if(durability < 60) {
-                g2d.drawImage(image.get(2), x, y, panel);
-            }
-            else if(durability < 80) {
-                g2d.drawImage(image.get(1), x, y, panel);
-            }
-            else if(this.durability <= 100) {
-                g2d.drawImage(image.get(0), x, y, panel);
-            }
-        }
-    }
-    */
 
     public abstract void loadImage();
     public abstract void draw(Graphics2D g2d);

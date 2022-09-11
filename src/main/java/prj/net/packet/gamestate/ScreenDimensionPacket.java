@@ -12,6 +12,11 @@ public class ScreenDimensionPacket extends Packet {
         screenDimension = new Dimension(width, height);
     }
 
+    public ScreenDimensionPacket(Dimension scrRes){
+        super(PacketType.scrDimension);
+        screenDimension = scrRes;
+    }
+
     public Dimension getScreenDimension() {
         return screenDimension;
     }

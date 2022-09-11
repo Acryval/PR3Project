@@ -15,6 +15,7 @@ import prj.net.packet.entity.player.PlayerMovePacket;
 import prj.net.packet.gamestate.ConnectToServerPacket;
 import prj.net.packet.gamestate.ScreenDimensionPacket;
 import prj.net.packet.gamestate.SetUsernamePacket;
+import prj.net.packet.gamestate.SetWorldNamePacket;
 import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
@@ -25,6 +26,7 @@ import prj.world.World;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.net.InetSocketAddress;
 import java.util.List;
 
@@ -35,58 +37,10 @@ public class ClientThread extends GameState {
     private World world;
     private Camera cam;
     private ClientNetworkManager networkManager;
-    private boolean paused;
-
     public Vector2i scrSize;
-
     private Font defaultFont;
     private String username;
-
-    @Override
-    public GameState init(List<Packet> dataIn) {
-        logger.setName("Client").dbg("init start");
-        instance = this;
-
-        paused = false;
-
-        defaultFont = new Font("Arial", Font.PLAIN, 11);
-        scrSize = new Vector2i();
-
-        world = new World();
-
-        this.username = "";
-        boolean startServer = false;
-        InetSocketAddress address = null;
-
-        loop: for(Packet data : dataIn){
-            switch (data.getType()){
-                case setUsername -> this.username = ((SetUsernamePacket)data).getUsername();
-                case startServer -> startServer = true;
-                case connectToServer -> address = ((ConnectToServerPacket)data).getAddress();
-                case passData -> {
-                    break loop;
-                }
-                default -> {}
-            }
-        }
-
-        networkManager = new ClientNetworkManager();
-
-        cam = new Camera();
-        cam.attach();
-
-        GameStateManager.instance.addMouseListener(cam);
-        GameStateManager.instance.addMouseMotionListener(cam);
-
-        if(startServer) {
-            networkManager.startServerInstance();
-        }else if(address != null){
-            networkManager.connectTo(address);
-        }
-
-        logger.dbg("init end");
-        return super.init(passRest(dataIn));
-    }
+    private String worldName;
 
     public String getUsername() {
         return username;
@@ -100,35 +54,54 @@ public class ClientThread extends GameState {
         return scrSize.y;
     }
 
-    public void update(double dt){
-        if(paused) return;
-
-        world.updateState(dt);
-        cam.update(world.getState(), world.getLocalPlayer());
-    }
-
-    @Override
     public void processPackets(List<Packet> dataIn) {
-        for(Packet p : dataIn){
-            if (p.getType() == PacketType.scrDimension) {
-                Dimension d = ((ScreenDimensionPacket) p).getScreenDimension();
-                scrSize = new Vector2i(d.width, d.height);
+        logger.setName("Client").dbg("init start");
+        instance = this;
+
+        BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
+        GameStateManager.instance.setCursor(blankCursor);
+
+        defaultFont = new Font("Arial", Font.PLAIN, 11);
+        scrSize = new Vector2i();
+
+        this.username = "";
+        boolean startServer = false;
+        InetSocketAddress address = null;
+
+        for(Packet data : dataIn){
+            switch (data.getType()){
+                case setUsername -> this.username = ((SetUsernamePacket)data).getUsername();
+                case setWorldName -> this.worldName = ((SetWorldNamePacket)data).getWorldName();
+                case startServer -> startServer = true;
+                case connectToServer -> address = ((ConnectToServerPacket)data).getAddress();
+                case scrDimension -> {
+                    Dimension d = ((ScreenDimensionPacket)data).getScreenDimension();
+                    scrSize = new Vector2i(d.width, d.height);
+                }
+                default -> {}
             }
         }
+
+        world = new World(worldName);
+        networkManager = new ClientNetworkManager();
+        cam = new Camera();
+        cam.attach();
+
+        GameStateManager.instance.addMouseListener(cam);
+        GameStateManager.instance.addMouseMotionListener(cam);
+
+        if(startServer) {
+            networkManager.startServerInstance();
+        }else if(address != null){
+            networkManager.connectTo(address);
+        }
+
+        logger.dbg("init end");
     }
 
-    @Override
-    public List<Packet> unload(List<Packet> endData) {
-        shutdown();
-        GameStateManager.instance.removeMouseListener(cam);
-        GameStateManager.instance.removeMouseMotionListener(cam);
-        return endData;
-    }
-
-    @Override
     public void setActions(InputMap im, ActionMap am) {
         im.put(KeyStroke.getKeyStroke("pressed ESCAPE"), "exit");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK), "pause");
 
         im.put(KeyStroke.getKeyStroke("pressed W"), "pw");
         im.put(KeyStroke.getKeyStroke("released W"), "rw");
@@ -136,6 +109,21 @@ public class ClientThread extends GameState {
         im.put(KeyStroke.getKeyStroke("released A"), "ra");
         im.put(KeyStroke.getKeyStroke("pressed D"), "pd");
         im.put(KeyStroke.getKeyStroke("released D"), "rd");
+
+        im.put(KeyStroke.getKeyStroke("shift pressed W"), "pw");
+        im.put(KeyStroke.getKeyStroke("shift released W"), "rw");
+        im.put(KeyStroke.getKeyStroke("shift pressed A"), "pa");
+        im.put(KeyStroke.getKeyStroke("shift released A"), "ra");
+        im.put(KeyStroke.getKeyStroke("shift pressed D"), "pd");
+        im.put(KeyStroke.getKeyStroke("shift released D"), "rd");
+
+        im.put(KeyStroke.getKeyStroke("ctrl pressed W"), "pw");
+        im.put(KeyStroke.getKeyStroke("ctrl released W"), "rw");
+        im.put(KeyStroke.getKeyStroke("ctrl pressed A"), "pa");
+        im.put(KeyStroke.getKeyStroke("ctrl released A"), "ra");
+        im.put(KeyStroke.getKeyStroke("ctrl pressed D"), "pd");
+        im.put(KeyStroke.getKeyStroke("ctrl released D"), "rd");
+
         im.put(KeyStroke.getKeyStroke("pressed 0"), "p0");
         im.put(KeyStroke.getKeyStroke("pressed 1"), "p1");
         im.put(KeyStroke.getKeyStroke("pressed 2"), "p2");
@@ -150,11 +138,6 @@ public class ClientThread extends GameState {
         am.put("exit", new AbstractAction() {
             public void actionPerformed(ActionEvent actionEvent) {
                 GameStateManager.instance.stop();
-            }
-        });
-        am.put("pause", new AbstractAction() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                paused ^= true;
             }
         });
 
@@ -297,10 +280,21 @@ public class ClientThread extends GameState {
         cam.draw(g);
     }
 
+    public void update(double dt){
+        world.updateState(dt);
+        cam.update(world.getState(), world.getLocalPlayer());
+    }
+
+    public List<Packet> unload(List<Packet> endData) {
+        shutdown();
+        GameStateManager.instance.removeMouseListener(cam);
+        GameStateManager.instance.removeMouseMotionListener(cam);
+        return endData;
+    }
+
     public void shutdown(){
         logger.dbg("shutdown");
         networkManager.shutdown();
-
     }
 
     public World getWorld() {

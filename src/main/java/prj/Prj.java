@@ -2,6 +2,7 @@ package prj;
 
 import prj.entity.User;
 import prj.gamestates.GameStateManager;
+import prj.gamestates.MenuState;
 import prj.net.packet.gamestate.*;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ import java.time.format.FormatStyle;
 import java.util.Date;
 
 public class Prj extends JFrame{
+    public static Prj instance;
     public static boolean LOG_PACKETS = false;
     public static boolean LOG_INFO = false;
     public static boolean DEBUG = false;
@@ -26,10 +28,13 @@ public class Prj extends JFrame{
     private final GameStateManager gsm;
 
     public Prj(String title, int width, int height) throws HeadlessException {
+        instance = this;
+
         setupLogfile("GameLog");
 
         gsm = new GameStateManager(width, height);
         gsm.registerGameState("client", ClientThread.class);
+        gsm.registerGameState("menu", MenuState.class);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(gsm);
@@ -37,6 +42,7 @@ public class Prj extends JFrame{
 
         pack();
 
+        setResizable(false);
         setLocationRelativeTo(null);
         setVisible(true);
 
@@ -53,7 +59,7 @@ public class Prj extends JFrame{
             }
         });
 
-        gsm.setState("client", new SetUsernamePacket("Acryval"), new StartServerPacket(), new PassDataPacket(), new ScreenDimensionPacket(width, height));
+        gsm.setState("menu", new ScreenDimensionPacket(width, height));
         gsm.run();
     }
 
@@ -65,6 +71,8 @@ public class Prj extends JFrame{
                 new FileWriter(LOGFILE).append("LOG Start @ ").append(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).format(ZonedDateTime.now())).append(System.lineSeparator()).append(System.lineSeparator()).close();
             } catch (IOException e) {
                 System.err.println("File " + LOGFILE + " inaccessible");
+                LOG_INFO = false;
+                LOGFILE = null;
             }
         }
     }
