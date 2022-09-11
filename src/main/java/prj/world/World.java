@@ -18,6 +18,7 @@ import prj.net.packet.world.BlockBrokenPacket;
 import prj.net.packet.world.BlockPlacedPacket;
 import prj.net.packet.world.WorldStatePacket;
 import prj.wall.DefaultBreakableWall;
+import prj.wall.DefaultSpikeWall;
 import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
 
@@ -88,6 +89,10 @@ public class World {
 
             state.wallsByCords.put(new Point(500, 400), new DefaultBreakableWall(500, 400));
             state.wallsByCords.put(new Point(550, 400), new DefaultBreakableWall(550, 400));
+
+            for (int i = -50; i < 800; i += 50) {
+                state.wallsByCords.put(new Point(i, 1000), new DefaultSpikeWall(i, 1000));
+            }
         }
     }
 
