@@ -1,5 +1,7 @@
 package prj.entity;
 
+import org.joml.Vector2i;
+import prj.ClientThread;
 import prj.ImgLoader;
 import prj.RotatedIcon;
 import prj.item.ItemBar;
@@ -180,10 +182,33 @@ public class Player implements Serializable {
     public void setLoggedIn(boolean loggedIn) {
         this.loggedIn = loggedIn;
     }
+<<<<<<< HEAD
+=======
+
+    public Point getPlayerGridCoords(){
+        int cellCordsX, cellCordsY;
+        if(x >= 0) {
+            cellCordsX = x - x % 50;
+        }
+        else {
+            cellCordsX = x - (50 + x % 50);
+        }
+
+        if(y >= 0) {
+            cellCordsY = y - y % 50;
+        }
+        else {
+            cellCordsY = y - (50 + y % 50);
+        }
+
+        return new Point(cellCordsX, cellCordsY);
+    }
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
 
     public void update(WorldState state, double dt) {
         if(!loggedIn) return;
 
+        //System.out.println(getPlayerGridCoords().x + " " + getPlayerGridCoords().y);
         if(keyLeft && keyRight || !keyLeft && !keyRight) {
             velocityX *= 0.9;
         }
@@ -199,6 +224,155 @@ public class Player implements Serializable {
         if(velocityX > 7) velocityX = 7;
         if(velocityX < -7) velocityX = -7;
 
+        if(keyUp) {
+            hitbox.y++;
+            for(int i = getPlayerGridCoords().x - 50; i <= getPlayerGridCoords().x + 100 ; i += 50) {
+                for(int j = getPlayerGridCoords().y - 50; j <= getPlayerGridCoords().y + 100 ; j += 50) {
+                    Wall wall = state.wallsByCords.get(new Point(i, j));
+                    if(wall != null) {
+                        if(wall.getHitbox().intersects(hitbox) && wall.isCollision()) {
+                            velocityY = -6;
+                        }
+                    }
+                }
+            }
+            hitbox.y--;
+        }
+        velocityY += 0.3;
+
+        hitbox.x += velocityX;
+<<<<<<< HEAD
+        for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
+            if(hitbox.intersects(wall.getValue().getHitbox()) && wall.getValue().isCollision()) {
+                if(!wall.getValue().isDamaging()) {
+                    hitbox.x -= velocityX;
+                    while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                        hitbox.x += Math.signum(velocityX);
+                    }
+                    hitbox.x -= Math.signum(velocityX);
+                    velocityX = 0;
+                    x = hitbox.x;
+                }
+                else {
+                    if(health > 0) {
+                        System.out.println("Gracz otrzymal obrazenia od kolcow (X)");
+                        setHealth(getHealth() - wall.getValue().getDamage());
+                        hitbox.x -= velocityX;
+                        while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                            hitbox.x += Math.signum(velocityX);
+                        }
+                        hitbox.x -= Math.signum(velocityX);
+                        velocityX = -Math.signum(velocityX) * 10;
+                        x = hitbox.x;
+                    }
+                    else {
+                        /* gracz umiera */
+=======
+        for(int i = getPlayerGridCoords().x - 50 ; i <= getPlayerGridCoords().x + 100 ; i += 50) {
+            for (int j = getPlayerGridCoords().y - 50; j <= getPlayerGridCoords().y + 100; j += 50) {
+                Wall wall = state.wallsByCords.get(new Point(i, j));
+                if (wall != null) {
+                    if (hitbox.intersects(wall.getHitbox()) && wall.isCollision()) {
+                        if (!wall.isDamaging()) {
+                            hitbox.x -= velocityX;
+                            while (!wall.getHitbox().intersects(hitbox)) {
+                                hitbox.x += Math.signum(velocityX);
+                            }
+                            hitbox.x -= Math.signum(velocityX);
+                            velocityX = 0;
+                            x = hitbox.x;
+                        } else {
+                            if (health > 0) {
+                                System.out.println("Gracz otrzymal obrazenia od kolcow (X)");
+                                setHealth(getHealth() - wall.getDamage());
+                                hitbox.x -= velocityX;
+                                while (!wall.getHitbox().intersects(hitbox)) {
+                                    hitbox.x += Math.signum(velocityX);
+                                }
+                                hitbox.x -= Math.signum(velocityX);
+                                velocityX = -Math.signum(velocityX) * 10;
+                                x = hitbox.x;
+                            } else {
+                                // gracz umiera
+                            }
+                        }
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
+                    }
+                }
+            }
+        }
+
+        hitbox.y += velocityY;
+<<<<<<< HEAD
+        for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
+            if(hitbox.intersects(wall.getValue().getHitbox()) && wall.getValue().isCollision()) {
+                if(!wall.getValue().isDamaging()) {
+                    hitbox.y -= velocityY;
+                    while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                        hitbox.y += Math.signum(velocityY);
+                    }
+                    hitbox.y -= Math.signum(velocityY);
+                    velocityY = 0;
+                    y = hitbox.y;
+                }
+                else {
+                    if(health > 0) {
+                        System.out.println("Gracz otrzymal obrazenia od kolcow (Y)");
+                        setHealth(getHealth() - wall.getValue().getDamage());
+                        hitbox.y -= velocityY;
+                        while(!wall.getValue().getHitbox().intersects(hitbox)) {
+                            hitbox.y += Math.signum(velocityY);
+                        }
+                        hitbox.y -= Math.signum(velocityY);
+                        velocityY = -Math.signum(velocityY) * 10;
+                        y = hitbox.y;
+                    }
+                    else {
+                        /* gracz umiera */
+=======
+        for(int i = getPlayerGridCoords().x - 50 ; i <= getPlayerGridCoords().x + 100 ; i += 50) {
+            for (int j = getPlayerGridCoords().y - 50; j <= getPlayerGridCoords().y + 100; j += 50) {
+                Wall wall = state.wallsByCords.get(new Point(i, j));
+                if (wall != null) {
+                    if (hitbox.intersects(wall.getHitbox()) && wall.isCollision()) {
+                        if (!wall.isDamaging()) {
+                            hitbox.y -= velocityY;
+                            while (!wall.getHitbox().intersects(hitbox)) {
+                                hitbox.y += Math.signum(velocityY);
+                            }
+                            hitbox.y -= Math.signum(velocityY);
+                            velocityY = 0;
+                            y = hitbox.y;
+                        } else {
+                            if (health > 0) {
+                                System.out.println("Gracz otrzymal obrazenia od kolcow (Y)");
+                                setHealth(getHealth() - wall.getDamage());
+                                hitbox.y -= velocityY;
+                                while (!wall.getHitbox().intersects(hitbox)) {
+                                    hitbox.y += Math.signum(velocityY);
+                                }
+                                hitbox.y -= Math.signum(velocityY);
+                                velocityY = -Math.signum(velocityY) * 10;
+                                y = hitbox.y;
+                            } else {
+                                // gracz umiera
+                            }
+                        }
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
+                    }
+                }
+            }
+        }
+
+        x += velocityX;
+        y += velocityY;
+
+        hitbox.x = x;
+        hitbox.y = y;
+
+<<<<<<< HEAD
+=======
+        /*
         if(keyUp) {
             hitbox.y++;
             for(Map.Entry<Point, Wall> wall : state.wallsByCords.entrySet()) {
@@ -235,7 +409,7 @@ public class Player implements Serializable {
                         x = hitbox.x;
                     }
                     else {
-                        /* gracz umiera */
+                        // gracz umiera
                     }
                 }
             }
@@ -266,18 +440,14 @@ public class Player implements Serializable {
                         y = hitbox.y;
                     }
                     else {
-                        /* gracz umiera */
+                        // gracz umiera
                     }
                 }
             }
         }
+        */
 
-        x += velocityX;
-        y += velocityY;
-
-        hitbox.x = x;
-        hitbox.y = y;
-
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
         if(itemBar != null) {
             itemBar.setX(x - startingPosX + 10);
             itemBar.setY(y - startingPosY + 10);

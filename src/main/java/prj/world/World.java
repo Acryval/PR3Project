@@ -19,6 +19,10 @@ import prj.net.packet.world.BlockPlacedPacket;
 import prj.net.packet.world.WorldStatePacket;
 import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultSpikeWall;
+<<<<<<< HEAD
+=======
+import prj.wall.DefaultUnbreakableWall;
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
 import prj.wall.Wall;
 
 import java.awt.*;
@@ -71,22 +75,42 @@ public class World {
         localPlayer = player;
 
         synchronized (state) {
+<<<<<<< HEAD
             for (int i = -50; i < 800; i += 50) {
                 state.wallsByCords.put(new Point(i, 600), new DefaultBreakableWall(i, 600));
+=======
+            for(int i = -500 ; i < 0 ; i += 50) {
+                for(int j = -3000 ; j < 4400 ; j += 50) {
+                    state.wallsByCords.put(new Point(j, i), new DefaultUnbreakableWall(j, i));
+                }
+            }
+            for(int i = 0 ; i < 1500 ; i += 50) {
+                for(int j = -3000 ; j < -2000 ; j += 50) {
+                    state.wallsByCords.put(new Point(j, i), new DefaultUnbreakableWall(j, i));
+                    state.wallsByCords.put(new Point(j + 6400, i), new DefaultUnbreakableWall(j + 6400, i));
+                }
+            }
+            for(int i = 1500 ; i < 2000 ; i += 50) {
+                for(int j = -3000 ; j < 4400 ; j += 50) {
+                    state.wallsByCords.put(new Point(j, i), new DefaultUnbreakableWall(j, i));
+                }
+            }
+            for(int i = -2000 ; i < 3400 ; i += 50) {
+                state.wallsByCords.put(new Point(i, 1450), new DefaultSpikeWall(i, 1450));
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
             }
 
-            state.wallsByCords.put(new Point(0, 550), new DefaultBreakableWall(0, 550));
-            state.wallsByCords.put(new Point(-50, 500), new DefaultBreakableWall(-50, 500));
-            state.wallsByCords.put(new Point(-100, 450), new DefaultBreakableWall(-100, 450));
-            state.wallsByCords.put(new Point(-150, 400), new DefaultBreakableWall(-150, 400));
-            state.wallsByCords.put(new Point(200, 550), new DefaultBreakableWall(200, 550));
-            state.wallsByCords.put(new Point(250, 550), new DefaultBreakableWall(250, 550));
 
+<<<<<<< HEAD
             state.wallsByCords.put(new Point(500, 400), new DefaultBreakableWall(500, 400));
             state.wallsByCords.put(new Point(550, 400), new DefaultBreakableWall(550, 400));
 
             for (int i = -50; i < 800; i += 50) {
                 state.wallsByCords.put(new Point(i, 1000), new DefaultSpikeWall(i, 1000));
+=======
+            for (int i = -1950; i < 3350; i += 50) {
+                state.wallsByCords.put(new Point(i, 600), new DefaultBreakableWall(i, 600));
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
             }
         }
     }

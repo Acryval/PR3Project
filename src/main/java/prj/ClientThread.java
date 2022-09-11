@@ -58,10 +58,13 @@ public class ClientThread extends GameState {
         logger.setName("Client").dbg("init start");
         instance = this;
 
+<<<<<<< HEAD
         BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
         GameStateManager.instance.setCursor(blankCursor);
 
+=======
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
         defaultFont = new Font("Arial", Font.PLAIN, 11);
         scrSize = new Vector2i();
 
@@ -83,7 +86,11 @@ public class ClientThread extends GameState {
             }
         }
 
+<<<<<<< HEAD
         world = new World(worldName);
+=======
+        world = new World();
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
         networkManager = new ClientNetworkManager();
         cam = new Camera();
         cam.attach();

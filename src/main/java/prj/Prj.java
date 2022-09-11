@@ -59,7 +59,11 @@ public class Prj extends JFrame{
             }
         });
 
+<<<<<<< HEAD
         gsm.setState("menu", new ScreenDimensionPacket(width, height));
+=======
+        gsm.setState("client", new SetUsernamePacket("User2"), new StartServerPacket(), new ScreenDimensionPacket(width, height));
+>>>>>>> 74b8399393bb14de84ef1bd62fcf65ba183c3de0
         gsm.run();
     }
 
