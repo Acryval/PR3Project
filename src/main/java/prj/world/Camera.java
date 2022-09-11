@@ -150,8 +150,9 @@ public class Camera implements MouseListener, MouseMotionListener {
             } else if (itemHeld instanceof Block block) {
                 if (cursorToPlayerDistance <= block.getRange()) {
                     Wall w = new DefaultBreakableWall(cellCordsX, cellCordsY);
+                    Wall old = world.getState().wallsByCords.get(cellCords);
                     world.getState().wallsByCords.put(cellCords, w);
-                    ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, w));
+                    ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, old, w));
                 }
             }
         }
