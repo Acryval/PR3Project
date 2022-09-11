@@ -6,6 +6,8 @@ import org.joml.Vector2dc;
 import org.joml.Vector2i;
 import prj.ClientThread;
 import prj.entity.Player;
+import prj.entity.Projectile;
+import prj.item.Bazooka;
 import prj.item.Block;
 import prj.item.Item;
 import prj.item.Pickaxe;
@@ -154,6 +156,19 @@ public class Camera implements MouseListener, MouseMotionListener {
                     world.getState().wallsByCords.put(cellCords, w);
                     ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, old, w));
                 }
+            }
+            else if(itemHeld instanceof Bazooka bazooka){
+                Vector2i scr = ClientThread.instance.scrSize;
+
+                /* TODO
+                Projectile projectile = new Projectile(
+                        world.getLocalPlayer().getX(),
+                        world.getLocalPlayer().getY(),
+                        mouse.x - scr.x/2,
+                        mouse.y - scr.y/2,
+                        0.0001
+                        );
+                 */
             }
         }
     }

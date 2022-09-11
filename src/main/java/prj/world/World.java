@@ -3,6 +3,7 @@ package prj.world;
 import prj.ClientThread;
 import prj.ServerThread;
 import prj.entity.Player;
+import prj.item.Bazooka;
 import prj.item.Block;
 import prj.item.ItemBar;
 import prj.item.Pickaxe;
@@ -67,6 +68,7 @@ public class World {
         Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
         player.getItemBar().addItem(new Pickaxe());
         player.getItemBar().addItem(new Block());
+        player.getItemBar().addItem(new Bazooka());
         player.setLoggedIn(true);
         localPlayer = player;
 
@@ -91,7 +93,6 @@ public class World {
                 state.wallsByCords.put(new Point(i, 1450), new DefaultSpikeWall(i, 1450));
             }
 
-
             for (int i = -1950; i < 3350; i += 50) {
                 state.wallsByCords.put(new Point(i, 600), new DefaultBreakableWall(i, 600));
             }
@@ -112,6 +113,7 @@ public class World {
                         Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
                         player.getItemBar().addItem(new Pickaxe());
                         player.getItemBar().addItem(new Block());
+                        player.getItemBar().addItem(new Bazooka());
                         synchronized (state) {
                             state.players.put(p.getUsername(), player);
                         }
