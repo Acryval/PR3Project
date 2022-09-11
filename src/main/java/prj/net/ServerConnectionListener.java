@@ -11,7 +11,6 @@ import java.net.Socket;
 public class ServerConnectionListener extends Thread {
     private final Logger logger = new Logger("");
     private ServerSocket listenerSocket;
-
     private boolean running;
 
     public ServerConnectionListener(int listenerBacklog) {

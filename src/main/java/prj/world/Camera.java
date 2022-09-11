@@ -142,7 +142,7 @@ public class Camera implements MouseListener, MouseMotionListener {
                 Wall w = world.getState().wallsByCords.get(cellCords);
                 if (w.isBreakable() && cursorToPlayerDistance <= pickaxe.getRange()) {
                     world.getState().wallsByCords.get(cellCords).setDurability(w.getDurability() - 10);
-                    if (w.getDurability() <= 10) {
+                    if (w.getDurability() <= 0) {
                         world.getState().wallsByCords.remove(new Point(cellCordsX, cellCordsY));
                         ClientThread.instance.getNetworkManager().send(new BlockBrokenPacket(cellCords, w));
                     }

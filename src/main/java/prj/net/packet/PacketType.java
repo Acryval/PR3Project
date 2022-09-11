@@ -28,7 +28,6 @@ public enum PacketType {
 
     // game state packets
     scrDimension,
-    passData,
     setUsername,
     startServer,
     connectToServer

@@ -37,6 +37,7 @@ public class Prj extends JFrame{
 
         pack();
 
+        setResizable(false);
         setLocationRelativeTo(null);
         setVisible(true);
 
@@ -53,7 +54,7 @@ public class Prj extends JFrame{
             }
         });
 
-        gsm.setState("client", new SetUsernamePacket("Bananos"), new StartServerPacket(), new PassDataPacket(), new ScreenDimensionPacket(width, height));
+        gsm.setState("client", new SetUsernamePacket("User2"), new StartServerPacket(), new ScreenDimensionPacket(width, height));
         gsm.run();
     }
 
@@ -65,6 +66,8 @@ public class Prj extends JFrame{
                 new FileWriter(LOGFILE).append("LOG Start @ ").append(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).format(ZonedDateTime.now())).append(System.lineSeparator()).append(System.lineSeparator()).close();
             } catch (IOException e) {
                 System.err.println("File " + LOGFILE + " inaccessible");
+                LOG_INFO = false;
+                LOGFILE = null;
             }
         }
     }

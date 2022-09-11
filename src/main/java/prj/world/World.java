@@ -19,7 +19,6 @@ import prj.net.packet.world.BlockPlacedPacket;
 import prj.net.packet.world.WorldStatePacket;
 import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultSpikeWall;
-import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
 
 import java.awt.*;
