@@ -33,8 +33,8 @@ public class Player implements Serializable {
         this.startingPosY = y;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.width = 44;
-        this.height = 88;
+        this.width = 50;
+        this.height = 100;
         this.hitbox = new Rectangle(this.x, this.y, this.width, this.height);
         this.image = "player";
         this.itemBar = itemBar;
@@ -167,7 +167,6 @@ public class Player implements Serializable {
     public void setLoggedIn(boolean loggedIn) {
         this.loggedIn = loggedIn;
     }
-    /* ****** */
 
     public void update(WorldState state, double dt) {
         if(!loggedIn) return;
@@ -262,8 +261,6 @@ public class Player implements Serializable {
 
     public void draw(Graphics2D g2d) {
         if(!loggedIn) return;
-        //g2d.setColor(Color.BLACK);
-        //g2d.fillRect(x, y, width, height);
         g2d.drawImage(ImgLoader.get(image), x, y, null);
     }
 }
