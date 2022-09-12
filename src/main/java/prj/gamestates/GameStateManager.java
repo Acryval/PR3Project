@@ -40,7 +40,6 @@ public class GameStateManager extends JPanel {
         gameStateRegistry = new HashMap<>();
         loadedStates = new HashMap<>();
 
-        Dimension dim = new Dimension(width, height);
         if(Prj.DBACCESS) {
             try {
                 emf = Persistence.createEntityManagerFactory("PR3Project-unit");
@@ -52,7 +51,7 @@ public class GameStateManager extends JPanel {
             emf = null;
             dbAvailable = false;
         }
-
+        Dimension dim = new Dimension(width, height);
 
         setBackground(Color.LIGHT_GRAY);
         setPreferredSize(dim);

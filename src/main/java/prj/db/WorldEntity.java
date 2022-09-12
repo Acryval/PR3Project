@@ -1,5 +1,6 @@
 package prj.db;
 
+import prj.wall.DefaultUnbreakableWall;
 import prj.world.WorldState;
 
 import javax.persistence.*;
@@ -57,8 +58,8 @@ public class WorldEntity {
             out.getWalls().remove(wallEntity);
         });
 
-        state.wallsByCords.forEach((k, v) -> {
-            Map.Entry<Integer, WallEntity> e = WallEntity.save(out, v);
+        state.wallsByCords.entrySet().stream().filter(e -> !e.getValue().getType().equals("DefaultUnbreakableWall")).forEach(v -> {
+            Map.Entry<Integer, WallEntity> e = WallEntity.save(out, v.getValue());
             if(e.getKey() == -1){
                 out.getWalls().add(e.getValue());
             }else{
@@ -75,6 +76,23 @@ public class WorldEntity {
         out.worldName = e.worldname;
         e.getPlayers().forEach(p -> out.players.put(p.getName(), PlayerEntity.load(p)));
         e.getWalls().forEach(w -> out.wallsByCords.put(new Point(w.getXpos(), w.getYpos()), WallEntity.load(w)));
+
+        for(int i = -500 ; i < 0 ; i += 50) {
+            for(int j = -3000 ; j < 4400 ; j += 50) {
+                out.wallsByCords.put(new Point(j, i), new DefaultUnbreakableWall(j, i));
+            }
+        }
+        for(int i = 0 ; i < 1500 ; i += 50) {
+            for(int j = -3000 ; j < -2000 ; j += 50) {
+                out.wallsByCords.put(new Point(j, i), new DefaultUnbreakableWall(j, i));
+                out.wallsByCords.put(new Point(j + 6400, i), new DefaultUnbreakableWall(j + 6400, i));
+            }
+        }
+        for(int i = 1500 ; i < 2000 ; i += 50) {
+            for(int j = -3000 ; j < 4400 ; j += 50) {
+                out.wallsByCords.put(new Point(j, i), new DefaultUnbreakableWall(j, i));
+            }
+        }
 
         return out;
     }

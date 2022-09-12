@@ -137,4 +137,9 @@ public class ClientNetworkManager extends Thread {
         logger.dbg("shutdown");
         stopServerInstance();
     }
+
+    public String getServerAddressString(){
+        int port = ServerThread.instance.getNetworkManager().getListenerAddress().getPort();
+        return String.format("Address: %s:%s", serverSocket.getInetAddress().toString().split("/")[1], port);
+    }
 }
