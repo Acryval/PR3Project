@@ -142,10 +142,10 @@ public class World {
                     }
                 }
                 case worldState -> {
-                    synchronized (state) {
-                        ((WorldStatePacket) data).unpackInto(state);
+                    if(!isServerWorld) {
+                        synchronized (state) {
+                            ((WorldStatePacket) data).unpackInto(state);
 
-                        if(!isServerWorld) {
                             if (state.players.containsKey(ClientThread.instance.getUsername())) {
                                 localPlayer = state.players.get(ClientThread.instance.getUsername());
                                 localPlayer.setLoggedIn(true);
@@ -177,7 +177,6 @@ public class World {
                                 state.players.get(p.getUsername()).setPos(p.getX(), p.getY());
                             }
                         }
-
                     }
                 }
                 case blockBroken -> {

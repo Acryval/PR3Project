@@ -24,7 +24,7 @@ public class PlayerEntity {
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "player_id")
-    private final List<ItemEntity> items = new ArrayList<>(10);
+    private final List<ItemEntity> items = new ArrayList<>();
 
     public static Map.Entry<Integer, PlayerEntity> save(WorldEntity we, Player p, String name){
         PlayerEntity out;
