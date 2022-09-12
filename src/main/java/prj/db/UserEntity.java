@@ -1,17 +1,18 @@
 package prj.db;
 
 import javax.persistence.*;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name="users")
+@Table(name="users", schema = "pr3")
 public class UserEntity {
     @Id
     private String username;
 
-    @ElementCollection
-    @CollectionTable(name = "worlds", joinColumns = @JoinColumn(name = "id"))
-    private Set<WorldEntity> worlds;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "owner")
+    private List<WorldEntity> worlds = new ArrayList<>();
 
     public String getUsername() {
         return username;
@@ -21,11 +22,11 @@ public class UserEntity {
         this.username = username;
     }
 
-    public Set<WorldEntity> getWorlds() {
+    public List<WorldEntity> getWorlds() {
         return worlds;
     }
 
-    public void setWorlds(Set<WorldEntity> worlds) {
+    public void setWorlds(List<WorldEntity> worlds) {
         this.worlds = worlds;
     }
 }

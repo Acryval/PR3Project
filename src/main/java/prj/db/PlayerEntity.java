@@ -1,165 +1,97 @@
 package prj.db;
 
 import prj.entity.Player;
+import prj.item.Item;
+import prj.item.ItemBar;
+import prj.world.WorldState;
 
 import javax.persistence.*;
+import java.util.*;
 
 @Entity
-@Table(name = "players")
+@Table(name = "players", schema = "pr3")
 public class PlayerEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
-    @ManyToMany
-    @JoinColumn(name = "id")
+    @ManyToOne
+    @JoinColumn(name = "world_id", insertable = false, updatable = false)
     private WorldEntity world;
+
     private String name;
+    private int xpos;
+    private int ypos;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item0;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item1;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item2;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item3;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item4;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item5;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item6;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item7;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item8;
-    @ManyToOne
-    @JoinColumn(name = "id")
-    private ItemEntity item9;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "player_id")
+    private final List<ItemEntity> items = new ArrayList<>(10);
 
-    public static PlayerEntity export(Player p, String username, WorldEntity world, EntityManager em){
-        PlayerEntity out = new PlayerEntity();
+    public static Map.Entry<Integer, PlayerEntity> save(WorldEntity we, Player p, String name){
+        PlayerEntity out;
+        int indx = -1;
 
-        out.world = world;
-        out.name = username;
-        out.item0 = ItemEntity.export(p.getItemBar().getItemBar().get(0), em);
-        out.item1 = ItemEntity.export(p.getItemBar().getItemBar().get(1), em);
-        out.item2 = ItemEntity.export(p.getItemBar().getItemBar().get(2), em);
-        out.item3 = ItemEntity.export(p.getItemBar().getItemBar().get(3), em);
-        out.item4 = ItemEntity.export(p.getItemBar().getItemBar().get(4), em);
-        out.item5 = ItemEntity.export(p.getItemBar().getItemBar().get(5), em);
-        out.item6 = ItemEntity.export(p.getItemBar().getItemBar().get(6), em);
-        out.item7 = ItemEntity.export(p.getItemBar().getItemBar().get(7), em);
-        out.item8 = ItemEntity.export(p.getItemBar().getItemBar().get(8), em);
-        out.item9 = ItemEntity.export(p.getItemBar().getItemBar().get(9), em);
+        List<PlayerEntity> pl = we.getPlayers().stream().filter(playerEntity -> playerEntity.name.equals(name)).toList();
+        if(pl.size() == 0){
+            out = new PlayerEntity();
+            out.setName(name);
+        }else{
+            out = pl.get(0);
+            indx = we.getPlayers().indexOf(out);
+        }
 
-        em.merge(out);
-        return out;
+        out.setXpos(p.getX());
+        out.setYpos(p.getY());
+
+        for(int i = 0; i < p.getItemBar().getItemBar().size(); i++){
+            Item it = p.getItemBar().getItemBar().get(i);
+            if(it == null) continue;
+            out.getItems().add(ItemEntity.save(out, it, i));
+        }
+
+        return new AbstractMap.SimpleEntry<>(indx, out);
+    }
+
+    public static Player load(PlayerEntity e){
+        Player p = new Player(e.xpos, e.ypos, new ItemBar(10, 10, (1400 - 50) / 2, (900 - 100) / 2, 10, 50, 50, 10, 0));
+
+        e.getItems().forEach(ie -> p.getItemBar().addItem(ie.getSlot(), ItemEntity.load(ie)));
+
+        return p;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setXpos(int xpos) {
+        this.xpos = xpos;
+    }
+
+    public void setYpos(int ypos) {
+        this.ypos = ypos;
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public String getName() {
+        return name;
+    }
+
+    public int getXpos() {
+        return xpos;
+    }
+
+    public int getYpos() {
+        return ypos;
     }
 
     public WorldEntity getWorld() {
         return world;
     }
 
-    public void setWorld(WorldEntity world) {
-        this.world = world;
-    }
-
-    public ItemEntity getItem0() {
-        return item0;
-    }
-
-    public void setItem0(ItemEntity item0) {
-        this.item0 = item0;
-    }
-
-    public ItemEntity getItem1() {
-        return item1;
-    }
-
-    public void setItem1(ItemEntity item1) {
-        this.item1 = item1;
-    }
-
-    public ItemEntity getItem2() {
-        return item2;
-    }
-
-    public void setItem2(ItemEntity item2) {
-        this.item2 = item2;
-    }
-
-    public ItemEntity getItem3() {
-        return item3;
-    }
-
-    public void setItem3(ItemEntity item3) {
-        this.item3 = item3;
-    }
-
-    public ItemEntity getItem4() {
-        return item4;
-    }
-
-    public void setItem4(ItemEntity item4) {
-        this.item4 = item4;
-    }
-
-    public ItemEntity getItem5() {
-        return item5;
-    }
-
-    public void setItem5(ItemEntity item5) {
-        this.item5 = item5;
-    }
-
-    public ItemEntity getItem6() {
-        return item6;
-    }
-
-    public void setItem6(ItemEntity item6) {
-        this.item6 = item6;
-    }
-
-    public ItemEntity getItem7() {
-        return item7;
-    }
-
-    public void setItem7(ItemEntity item7) {
-        this.item7 = item7;
-    }
-
-    public ItemEntity getItem8() {
-        return item8;
-    }
-
-    public void setItem8(ItemEntity item8) {
-        this.item8 = item8;
-    }
-
-    public ItemEntity getItem9() {
-        return item9;
-    }
-
-    public void setItem9(ItemEntity item9) {
-        this.item9 = item9;
+    public List<ItemEntity> getItems() {
+        return items;
     }
 }

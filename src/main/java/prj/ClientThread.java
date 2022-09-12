@@ -1,34 +1,32 @@
 package prj;
 
 import org.joml.Vector2i;
+import prj.db.DBUtils;
 import prj.entity.Player;
 import prj.gamestates.GameState;
 import prj.gamestates.GameStateManager;
-import prj.item.Block;
-import prj.item.Item;
-import prj.item.Pickaxe;
 import prj.log.Logger;
 import prj.net.ClientNetworkManager;
 import prj.net.packet.Packet;
-import prj.net.packet.PacketType;
 import prj.net.packet.entity.player.PlayerMovePacket;
 import prj.net.packet.gamestate.ConnectToServerPacket;
 import prj.net.packet.gamestate.ScreenDimensionPacket;
 import prj.net.packet.gamestate.SetUsernamePacket;
 import prj.net.packet.gamestate.SetWorldNamePacket;
-import prj.wall.DefaultBreakableWall;
-import prj.wall.DefaultTransparentWall;
-import prj.wall.Wall;
+import prj.net.packet.world.WorldStatePacket;
 import prj.world.Camera;
 import prj.world.Direction;
 import prj.world.World;
+import prj.world.WorldState;
 
+import javax.persistence.EntityManager;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Map;
 
 public class ClientThread extends GameState {
     public static ClientThread instance = null;
@@ -41,6 +39,7 @@ public class ClientThread extends GameState {
     private Font defaultFont;
     private String username;
     private String worldName;
+    private boolean hosting;
 
     public String getUsername() {
         return username;
@@ -91,10 +90,28 @@ public class ClientThread extends GameState {
         GameStateManager.instance.addMouseListener(cam);
         GameStateManager.instance.addMouseMotionListener(cam);
 
+        this.hosting = true;
         if(startServer) {
             networkManager.startServerInstance();
         }else if(address != null){
+            this.hosting = false;
             networkManager.connectTo(address);
+        }
+
+        if(hosting){
+            EntityManager em = GameStateManager.instance.getEmf().createEntityManager();
+            em.getTransaction().begin();
+
+            WorldState state = DBUtils.loadState(username, worldName, em);
+
+            if(state.worldName.isEmpty())
+                DBUtils.saveState(username, world, em);
+            else {
+                world.applyPacketData(List.of(new WorldStatePacket(state)));
+            }
+
+            em.getTransaction().commit();
+            em.close();
         }
 
         logger.dbg("init end");
@@ -294,6 +311,15 @@ public class ClientThread extends GameState {
 
     public void shutdown(){
         logger.dbg("shutdown");
+        if(hosting){
+            EntityManager em = GameStateManager.instance.getEmf().createEntityManager();
+            em.getTransaction().begin();
+
+            DBUtils.saveState(username, world, em);
+
+            em.getTransaction().commit();
+            em.close();
+        }
         networkManager.shutdown();
     }
 

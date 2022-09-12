@@ -3,9 +3,10 @@ package prj.gamestates;
 import prj.log.Logger;
 import prj.net.packet.Packet;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 public class GameStateManager extends JPanel {
     public static GameStateManager instance;
+
     private final Logger logger = new Logger("");
     private GameState currentState;
     private final Map<String, Class<? extends GameState>> gameStateRegistry;
@@ -26,6 +28,7 @@ public class GameStateManager extends JPanel {
     private double totalFpsUpdateTime;
     private double fps;
     private boolean running;
+    private EntityManagerFactory emf;
 
     public GameStateManager(int width, int height) {
         logger.setName("Game State Manager").dbg("init start");
@@ -36,6 +39,7 @@ public class GameStateManager extends JPanel {
         loadedStates = new HashMap<>();
 
         Dimension dim = new Dimension(width, height);
+        emf = Persistence.createEntityManagerFactory("PR3Project-unit");
 
         setBackground(Color.LIGHT_GRAY);
         setPreferredSize(dim);
@@ -133,6 +137,7 @@ public class GameStateManager extends JPanel {
         loadedStates.forEach((k, v) -> v.unload());
         loadedStates.clear();
         gameStateRegistry.clear();
+        emf.close();
     }
 
     public GameState getCurrentState() {
@@ -186,5 +191,9 @@ public class GameStateManager extends JPanel {
 
     public double getFps() {
         return fps;
+    }
+
+    public EntityManagerFactory getEmf() {
+        return emf;
     }
 }

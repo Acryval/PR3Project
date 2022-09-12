@@ -32,6 +32,9 @@ public class ItemBar implements Serializable {
         this.maxCapacity = maxCapacity;
         this.inHandItemIndex = inHandItemIndex;
         this.itemBar = new ArrayList<>();
+        for(int i = 0; i < maxCapacity; i++){
+            itemBar.add(null);
+        }
     }
 
     public int getPlayerPosX() {
@@ -122,9 +125,9 @@ public class ItemBar implements Serializable {
         this.itemBar = itemBar;
     }
 
-    public void addItem(Item item) {
-        if(itemBar.size() != maxCapacity) {
-            itemBar.add(item);
+    public void addItem(int slot, Item item) {
+        if(slot >= 0 && slot < maxCapacity) {
+            itemBar.set(slot, item);
         }
     }
 

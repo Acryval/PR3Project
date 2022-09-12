@@ -1,81 +1,101 @@
 package prj.db;
 
-import prj.ClientThread;
 import prj.world.WorldState;
 
-import java.util.Set;
-
 import javax.persistence.*;
+import java.awt.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Entity
-@Table(name = "worlds")
+@Table(name = "worlds", schema = "pr3")
 public class WorldEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String name;
+    private String worldname;
 
-    @OneToMany
-    @JoinColumn(name = "username")
+    @ManyToOne
+    @JoinColumn(name = "owner", insertable = false, updatable = false)
     private UserEntity user;
 
-    @ElementCollection
-    @CollectionTable(name = "players", joinColumns = @JoinColumn(name = "id"))
-    private Set<PlayerEntity> players;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "world_id")
+    private final List<WallEntity> walls = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "walls", joinColumns = @JoinColumn(name = "id"))
-    private Set<WallEntity> walls;
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "world_id")
+    private final List<PlayerEntity> players = new ArrayList<>();
 
-    public static WorldEntity export(WorldState state, UserEntity u, EntityManager em){
-        WorldEntity out = new WorldEntity();
+    public static Map.Entry<Integer, WorldEntity> save(UserEntity ue, WorldState state, EntityManager em){
+        WorldEntity out;
+        int indx = -1;
 
-        out.name = state.worldName;
-        out.user = u;
-        state.players.forEach((k, v) -> out.players.add(PlayerEntity.export(v, k, out, em)));
-        state.wallsByCords.forEach((k, v) -> out.walls.add(WallEntity.export(v, out, em)));
+        List<WorldEntity> wl = ue.getWorlds().stream().filter(w -> w.worldname.equals(state.worldName)).toList();
+        if(wl.size() == 0){
+            out = new WorldEntity();
+            out.setWorldname(state.worldName);
+        }else{
+            out = wl.get(0);
+            indx = ue.getWorlds().indexOf(out);
+        }
 
-        em.merge(out);
+        state.players.forEach((k, v) -> {
+            Map.Entry<Integer, PlayerEntity> e = PlayerEntity.save(out, v, k);
+            if(e.getKey() == -1){
+                out.getPlayers().add(e.getValue());
+            }else{
+                out.getPlayers().set(e.getKey(), e.getValue());
+            }
+        });
+
+        List<WallEntity> toRemove = out.getWalls().stream().filter(wallEntity -> !state.wallsByCords.containsKey(new Point(wallEntity.getXpos(), wallEntity.getYpos()))).toList();
+        toRemove.forEach(wallEntity -> {
+            em.remove(wallEntity);
+            out.getWalls().remove(wallEntity);
+        });
+
+        state.wallsByCords.forEach((k, v) -> {
+            Map.Entry<Integer, WallEntity> e = WallEntity.save(out, v);
+            if(e.getKey() == -1){
+                out.getWalls().add(e.getValue());
+            }else{
+                out.getWalls().set(e.getKey(), e.getValue());
+            }
+        });
+
+        return new AbstractMap.SimpleEntry<>(indx, out);
+    }
+
+    public static WorldState load(WorldEntity e){
+        WorldState out = new WorldState();
+
+        out.worldName = e.worldname;
+        e.getPlayers().forEach(p -> out.players.put(p.getName(), PlayerEntity.load(p)));
+        e.getWalls().forEach(w -> out.wallsByCords.put(new Point(w.getXpos(), w.getYpos()), WallEntity.load(w)));
+
         return out;
     }
 
-    public int getId() {
-        return id;
+    public void setWorldname(String worldname) {
+        this.worldname = worldname;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public String getWorldname() {
+        return worldname;
     }
 
     public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
-
-    public Set<PlayerEntity> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(Set<PlayerEntity> players) {
-        this.players = players;
-    }
-
-    public Set<WallEntity> getWalls() {
+    public List<WallEntity> getWalls() {
         return walls;
     }
 
-    public void setWalls(Set<WallEntity> walls) {
-        this.walls = walls;
+    public List<PlayerEntity> getPlayers() {
+        return players;
     }
 }

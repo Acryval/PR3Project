@@ -2,7 +2,7 @@ package prj;
 
 import prj.gamestates.GameStateManager;
 import prj.gamestates.MenuState;
-import prj.net.packet.gamestate.*;
+import prj.net.packet.gamestate.ScreenDimensionPacket;
 
 import javax.swing.*;
 import java.awt.*;

@@ -3,10 +3,9 @@ package prj.net;
 import prj.ServerThread;
 import prj.log.Logger;
 import prj.net.packet.Packet;
-import prj.net.packet.PacketType;
 import prj.net.packet.system.ServerShutdownPacket;
-import prj.world.UserSpecificData;
 import prj.world.PreparedPackets;
+import prj.world.UserSpecificData;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

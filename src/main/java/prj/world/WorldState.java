@@ -17,6 +17,7 @@ public class WorldState implements Packable {
     public HashMap<Point, Wall> wallsByCords;
 
     public WorldState() {
+        worldName = "";
         wallsByCords = new HashMap<>();
         players = new HashMap<>();
     }
