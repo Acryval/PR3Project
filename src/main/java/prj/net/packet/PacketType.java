@@ -29,6 +29,7 @@ public enum PacketType {
     // game state packets
     scrDimension,
     setUsername,
+    setWorldName,
     startServer,
     connectToServer,
 

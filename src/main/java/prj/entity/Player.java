@@ -10,15 +10,12 @@ import prj.world.WorldState;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.io.Serializable;
 import java.util.Map;
 
 public class Player implements Serializable {
     private int x;
     private int y;
-    private int startingPosX;
-    private int startingPosY;
     private int width;
     private int height;
     private double velocityX;
@@ -35,8 +32,6 @@ public class Player implements Serializable {
     public Player(int x, int y, ItemBar itemBar) {
         this.x = x;
         this.y = y;
-        this.startingPosX = x;
-        this.startingPosY = y;
         this.velocityX = 0;
         this.velocityY = 0;
         this.health = 100;
@@ -69,22 +64,6 @@ public class Player implements Serializable {
 
     public void setY(int y) {
         this.y = y;
-    }
-
-    public int getStartingPosX() {
-        return startingPosX;
-    }
-
-    public void setStartingPosX(int startingPosX) {
-        this.startingPosX = startingPosX;
-    }
-
-    public int getStartingPosY() {
-        return startingPosY;
-    }
-
-    public void setStartingPosY(int startingPosY) {
-        this.startingPosY = startingPosY;
     }
 
     public int getWidth() {
@@ -312,8 +291,8 @@ public class Player implements Serializable {
         hitbox.y = y;
 
         if(itemBar != null) {
-            itemBar.setX(x - startingPosX + 10);
-            itemBar.setY(y - startingPosY + 10);
+            itemBar.setX(x - 665);
+            itemBar.setY(y - 390);
             itemBar.setPlayerPosX(x);
             itemBar.setPlayerPosY(y);
             if (keyRight) {

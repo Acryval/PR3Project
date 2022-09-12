@@ -44,11 +44,12 @@ public class World {
         logger.dbg("init end");
     }
 
-    public World() {
+    public World(String name) {
         logger.setName("Client world").dbg("init start");
 
         this.isServerWorld = false;
         this.state = new WorldState();
+        this.state.worldName = name;
 
         generateWorld();
 
@@ -66,11 +67,13 @@ public class World {
     public void generateWorld(){
         ItemBar itemBar = new ItemBar(10, 10, (1400 - 50) / 2, (900 - 100) / 2, 10, 50, 50, 10, 0);
         Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
-        player.getItemBar().addItem(new Pickaxe());
-        player.getItemBar().addItem(new Block());
-        player.getItemBar().addItem(new Bazooka());
+        player.getItemBar().addItem(0, new Pickaxe());
+        player.getItemBar().addItem(1, new Block());
+        player.getItemBar().addItem(2, new Bazooka());
+        state.players.put(ClientThread.instance.getUsername(), player);
         player.setLoggedIn(true);
         localPlayer = player;
+
 
         synchronized (state) {
             for(int i = -500 ; i < 0 ; i += 50) {
@@ -111,9 +114,9 @@ public class World {
                     if (!state.players.containsKey(p.getUsername())) {
                         ItemBar itemBar = new ItemBar(10, 10, (1400 - 50) / 2, (900 - 100) / 2, 10, 50, 50, 10, 0);
                         Player player = new Player((1400 - 50) / 2, (900 - 100) / 2, itemBar);
-                        player.getItemBar().addItem(new Pickaxe());
-                        player.getItemBar().addItem(new Block());
-                        player.getItemBar().addItem(new Bazooka());
+                        player.getItemBar().addItem(0, new Pickaxe());
+                        player.getItemBar().addItem(1, new Block());
+                        player.getItemBar().addItem(2, new Bazooka());
                         synchronized (state) {
                             state.players.put(p.getUsername(), player);
                         }
@@ -141,6 +144,13 @@ public class World {
                 case worldState -> {
                     synchronized (state) {
                         ((WorldStatePacket) data).unpackInto(state);
+
+                        if(!isServerWorld) {
+                            if (state.players.containsKey(ClientThread.instance.getUsername())) {
+                                localPlayer = state.players.get(ClientThread.instance.getUsername());
+                                localPlayer.setLoggedIn(true);
+                            }
+                        }
                     }
                 }
                 case playerMove -> {
@@ -322,5 +332,13 @@ public class World {
         synchronized (state){
             return state.players.get(username);
         }
+    }
+
+    public void setLocalPlayer(Player localPlayer) {
+        this.localPlayer = localPlayer;
+    }
+
+    public boolean isServerWorld() {
+        return isServerWorld;
     }
 }

@@ -1,8 +1,6 @@
 package prj.world;
 
-import org.joml.RoundingMode;
 import org.joml.Vector2d;
-import org.joml.Vector2dc;
 import org.joml.Vector2i;
 import prj.ClientThread;
 import prj.entity.Player;
@@ -14,14 +12,12 @@ import prj.item.Pickaxe;
 import prj.net.packet.world.BlockBrokenPacket;
 import prj.net.packet.world.BlockPlacedPacket;
 import prj.wall.DefaultBreakableWall;
-import prj.wall.DefaultTransparentWall;
 import prj.wall.Wall;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.Vector;
 
 public class Camera implements MouseListener, MouseMotionListener {
     private final Vector2d pos;

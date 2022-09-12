@@ -40,4 +40,8 @@ public abstract class Item implements Serializable {
     public void setRange(int range) {
         this.range = range;
     }
+
+    public String getItemName(){
+        return itemImage;
+    }
 }

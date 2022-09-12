@@ -1,6 +1,5 @@
 package prj.wall;
 
-import javax.swing.*;
 import java.awt.*;
 
 public class DefaultSpikeWall extends Wall{

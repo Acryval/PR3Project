@@ -1,8 +1,8 @@
 package prj;
 
-import prj.entity.User;
 import prj.gamestates.GameStateManager;
-import prj.net.packet.gamestate.*;
+import prj.gamestates.MenuState;
+import prj.net.packet.gamestate.ScreenDimensionPacket;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +10,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +17,7 @@ import java.time.format.FormatStyle;
 import java.util.Date;
 
 public class Prj extends JFrame{
+    public static Prj instance;
     public static boolean LOG_PACKETS = false;
     public static boolean LOG_INFO = false;
     public static boolean DEBUG = false;
@@ -26,10 +26,13 @@ public class Prj extends JFrame{
     private final GameStateManager gsm;
 
     public Prj(String title, int width, int height) throws HeadlessException {
+        instance = this;
+
         setupLogfile("GameLog");
 
         gsm = new GameStateManager(width, height);
         gsm.registerGameState("client", ClientThread.class);
+        gsm.registerGameState("menu", MenuState.class);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(gsm);
@@ -54,7 +57,7 @@ public class Prj extends JFrame{
             }
         });
 
-        gsm.setState("client", new SetUsernamePacket("User2"), new StartServerPacket(), new ScreenDimensionPacket(width, height));
+        gsm.setState("menu", new ScreenDimensionPacket(width, height));
         gsm.run();
     }
 

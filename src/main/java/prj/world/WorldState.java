@@ -11,6 +11,8 @@ import java.util.HashMap;
 
 public class WorldState implements Packable {
     @PacketElement
+    public String worldName;
+    @PacketElement
     public HashMap<String, Player> players;
     @PacketElement
     public HashMap<Point, Wall> wallsByCords;
@@ -18,6 +20,7 @@ public class WorldState implements Packable {
     public HashMap<Point, Projectile> projectiles;
 
     public WorldState() {
+        worldName = "";
         wallsByCords = new HashMap<>();
         players = new HashMap<>();
         projectiles = new HashMap<>();
@@ -29,6 +32,7 @@ public class WorldState implements Packable {
     }
 
     public void set(WorldState state){
+        worldName = state.worldName;
         wallsByCords = state.wallsByCords;
         players = state.players;
         projectiles = state.projectiles;

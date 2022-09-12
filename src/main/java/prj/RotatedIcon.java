@@ -1,10 +1,7 @@
 package prj;
 
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.Graphics;
-import java.awt.RenderingHints;
-import javax.swing.Icon;
+import javax.swing.*;
+import java.awt.*;
 
 /* https://tips4java.wordpress.com/2009/04/06/rotated-icon/ */
 public class RotatedIcon implements Icon

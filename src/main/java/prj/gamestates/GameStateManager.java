@@ -3,9 +3,10 @@ package prj.gamestates;
 import prj.log.Logger;
 import prj.net.packet.Packet;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 public class GameStateManager extends JPanel {
     public static GameStateManager instance;
+
     private final Logger logger = new Logger("");
     private GameState currentState;
     private final Map<String, Class<? extends GameState>> gameStateRegistry;
@@ -26,6 +28,8 @@ public class GameStateManager extends JPanel {
     private double totalFpsUpdateTime;
     private double fps;
     private boolean running;
+    private EntityManagerFactory emf;
+    private final boolean dbAvailable;
 
     public GameStateManager(int width, int height) {
         logger.setName("Game State Manager").dbg("init start");
@@ -36,16 +40,19 @@ public class GameStateManager extends JPanel {
         loadedStates = new HashMap<>();
 
         Dimension dim = new Dimension(width, height);
+        try {
+            emf = Persistence.createEntityManagerFactory("PR3Project-unit");
+        }catch (Exception ignored){
+            emf = null;
+        }
+        dbAvailable = emf != null;
+
 
         setBackground(Color.LIGHT_GRAY);
         setPreferredSize(dim);
         setSize(dim);
         setFocusable(true);
         requestFocus();
-
-        BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-        setCursor(blankCursor);
 
         im = getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         am = getActionMap();
@@ -137,6 +144,8 @@ public class GameStateManager extends JPanel {
         loadedStates.forEach((k, v) -> v.unload());
         loadedStates.clear();
         gameStateRegistry.clear();
+        if(emf != null)
+            emf.close();
     }
 
     public GameState getCurrentState() {
@@ -190,5 +199,13 @@ public class GameStateManager extends JPanel {
 
     public double getFps() {
         return fps;
+    }
+
+    public EntityManagerFactory getEmf() {
+        return emf;
+    }
+
+    public boolean isDbAvailable() {
+        return dbAvailable;
     }
 }
