@@ -97,19 +97,23 @@ public class ClientThread extends GameState {
         }
 
         if(hosting && GameStateManager.instance.isDbAvailable()){
+            logger.dbg("loading world: " + worldName + " from cloud");
             EntityManager em = GameStateManager.instance.getEmf().createEntityManager();
             em.getTransaction().begin();
 
             WorldState state = DBUtils.loadState(username, worldName, em);
 
-            if(state.worldName.isEmpty())
+            if(state.worldName.isEmpty()) {
+                logger.dbg("cannot find world:" + worldName);
+                logger.dbg("saving new world to db");
                 DBUtils.saveState(username, world, em);
-            else {
+            }else{;
                 world.applyPacketData(List.of(new WorldStatePacket(state)));
             }
 
             em.getTransaction().commit();
             em.close();
+            logger.dbg("load complete");
         }
 
         logger.dbg("init end");
@@ -309,7 +313,10 @@ public class ClientThread extends GameState {
 
     public void shutdown(){
         logger.dbg("shutdown");
+        networkManager.shutdown();
+
         if(hosting && GameStateManager.instance.isDbAvailable()){
+            logger.dbg("sync database start");
             EntityManager em = GameStateManager.instance.getEmf().createEntityManager();
             em.getTransaction().begin();
 
@@ -317,8 +324,8 @@ public class ClientThread extends GameState {
 
             em.getTransaction().commit();
             em.close();
+            logger.dbg("sync database end");
         }
-        networkManager.shutdown();
     }
 
     public World getWorld() {
