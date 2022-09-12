@@ -19,10 +19,10 @@ import java.util.Date;
 public class Prj extends JFrame{
     public static Prj instance;
     public static boolean LOG_PACKETS = false;
-    public static boolean LOG_INFO = false;
+    public static boolean LOG_INFO = true;
     public static boolean DEBUG = false;
     public static boolean SHOWFPS = false;
-    public static boolean DBACCESS = false;
+    public static boolean DBACCESS = true;
     public static String LOGFILE = null;
     private final GameStateManager gsm;
 
@@ -95,6 +95,12 @@ public class Prj extends JFrame{
             }
             if(arg.contains("--dba")){
                 Prj.DBACCESS = true;
+            }
+            if(arg.contains("--no-dba")){
+                Prj.DBACCESS = false;
+            }
+            if(arg.contains("--no-log")){
+                Prj.LOG_INFO = false;
             }
         }
 
