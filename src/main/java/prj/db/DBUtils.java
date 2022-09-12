@@ -4,6 +4,7 @@ import prj.world.World;
 import prj.world.WorldState;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.Map;
 
@@ -32,7 +33,11 @@ public class DBUtils {
         if(ue == null) return new WorldState();
 
         Query q = em.createQuery("from WorldEntity where user.username = :owner and worldname = :name").setParameter("owner", username).setParameter("name", worldName);
-        WorldEntity we = (WorldEntity) q.getSingleResult();
+
+        WorldEntity we = null;
+        try {
+            we = (WorldEntity) q.getSingleResult();
+        }catch (NoResultException ignored){}
 
         if(we == null) return new WorldState();
 

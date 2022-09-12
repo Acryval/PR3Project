@@ -1,6 +1,7 @@
 package prj.db;
 
 import prj.entity.Player;
+import prj.item.Bazooka;
 import prj.item.Block;
 import prj.item.Item;
 import prj.item.Pickaxe;
@@ -44,6 +45,7 @@ public class ItemEntity {
         switch (i.type){
             case "Pickaxe" -> out = new Pickaxe();
             case "BlockPrototype" -> out = new Block();
+            case "Bazooka" -> out = new Bazooka();
         }
 
         return out;

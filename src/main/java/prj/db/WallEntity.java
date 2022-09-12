@@ -2,6 +2,7 @@ package prj.db;
 
 import prj.wall.DefaultBreakableWall;
 import prj.wall.DefaultSpikeWall;
+import prj.wall.DefaultUnbreakableWall;
 import prj.wall.Wall;
 
 import javax.persistence.*;
@@ -48,6 +49,7 @@ public class WallEntity {
         switch (e.getType()){
             case "DefaultSpikeWall" -> out = new DefaultSpikeWall(e.xpos, e.ypos);
             case "DefaultBreakableWall" -> out = new DefaultBreakableWall(e.xpos, e.ypos);
+            case "DefaultUnbreakableWall" -> out = new DefaultUnbreakableWall(e.xpos, e.ypos);
         }
 
         return out;

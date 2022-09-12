@@ -31,7 +31,7 @@ public class MenuState extends GameState{
     public void processPackets(List<Packet> dataIn) {
         currOption = 0;
         username = new JTextArea("test user name");
-        worldName = new JTextArea("test world name");
+        worldName = new JTextArea("new world");
         address = new JTextArea("test address");
 
         GameStateManager.instance.add(username);

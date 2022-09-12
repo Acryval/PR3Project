@@ -1,5 +1,6 @@
 package prj.gamestates;
 
+import prj.Prj;
 import prj.log.Logger;
 import prj.net.packet.Packet;
 
@@ -40,12 +41,17 @@ public class GameStateManager extends JPanel {
         loadedStates = new HashMap<>();
 
         Dimension dim = new Dimension(width, height);
-        try {
-            emf = Persistence.createEntityManagerFactory("PR3Project-unit");
-        }catch (Exception ignored){
+        if(Prj.DBACCESS) {
+            try {
+                emf = Persistence.createEntityManagerFactory("PR3Project-unit");
+            } catch (Exception ignored) {
+                emf = null;
+            }
+            dbAvailable = emf != null;
+        }else{
             emf = null;
+            dbAvailable = false;
         }
-        dbAvailable = emf != null;
 
 
         setBackground(Color.LIGHT_GRAY);

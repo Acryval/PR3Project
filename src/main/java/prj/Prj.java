@@ -22,6 +22,7 @@ public class Prj extends JFrame{
     public static boolean LOG_INFO = false;
     public static boolean DEBUG = false;
     public static boolean SHOWFPS = false;
+    public static boolean DBACCESS = false;
     public static String LOGFILE = null;
     private final GameStateManager gsm;
 
@@ -91,6 +92,9 @@ public class Prj extends JFrame{
             }
             if(arg.contains("--showFps")){
                 Prj.SHOWFPS = true;
+            }
+            if(arg.contains("--dba")){
+                Prj.DBACCESS = true;
             }
         }
 
