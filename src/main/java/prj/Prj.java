@@ -1,6 +1,5 @@
 package prj;
 
-import prj.entity.User;
 import prj.gamestates.GameStateManager;
 import prj.gamestates.MenuState;
 import prj.net.packet.gamestate.*;
@@ -11,7 +10,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
