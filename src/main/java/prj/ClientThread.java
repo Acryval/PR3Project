@@ -2,7 +2,6 @@ package prj;
 
 import org.joml.Vector2i;
 import prj.db.DBUtils;
-import prj.entity.Player;
 import prj.gamestates.GameState;
 import prj.gamestates.GameStateManager;
 import prj.log.Logger;
@@ -26,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Map;
 
 public class ClientThread extends GameState {
     public static ClientThread instance = null;
@@ -98,7 +96,7 @@ public class ClientThread extends GameState {
             networkManager.connectTo(address);
         }
 
-        if(hosting){
+        if(hosting && GameStateManager.instance.isDbAvailable()){
             EntityManager em = GameStateManager.instance.getEmf().createEntityManager();
             em.getTransaction().begin();
 
@@ -311,7 +309,7 @@ public class ClientThread extends GameState {
 
     public void shutdown(){
         logger.dbg("shutdown");
-        if(hosting){
+        if(hosting && GameStateManager.instance.isDbAvailable()){
             EntityManager em = GameStateManager.instance.getEmf().createEntityManager();
             em.getTransaction().begin();
 

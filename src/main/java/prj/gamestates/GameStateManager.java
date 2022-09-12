@@ -29,6 +29,7 @@ public class GameStateManager extends JPanel {
     private double fps;
     private boolean running;
     private EntityManagerFactory emf;
+    private final boolean dbAvailable;
 
     public GameStateManager(int width, int height) {
         logger.setName("Game State Manager").dbg("init start");
@@ -39,7 +40,13 @@ public class GameStateManager extends JPanel {
         loadedStates = new HashMap<>();
 
         Dimension dim = new Dimension(width, height);
-        emf = Persistence.createEntityManagerFactory("PR3Project-unit");
+        try {
+            emf = Persistence.createEntityManagerFactory("PR3Project-unit");
+        }catch (Exception ignored){
+            emf = null;
+        }
+        dbAvailable = emf != null;
+
 
         setBackground(Color.LIGHT_GRAY);
         setPreferredSize(dim);
@@ -137,7 +144,8 @@ public class GameStateManager extends JPanel {
         loadedStates.forEach((k, v) -> v.unload());
         loadedStates.clear();
         gameStateRegistry.clear();
-        emf.close();
+        if(emf != null)
+            emf.close();
     }
 
     public GameState getCurrentState() {
@@ -195,5 +203,9 @@ public class GameStateManager extends JPanel {
 
     public EntityManagerFactory getEmf() {
         return emf;
+    }
+
+    public boolean isDbAvailable() {
+        return dbAvailable;
     }
 }
