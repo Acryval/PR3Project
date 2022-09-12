@@ -339,4 +339,8 @@ public class ClientThread extends GameState {
     public ClientNetworkManager getNetworkManager() {
         return networkManager;
     }
+
+    public boolean isHosting(){
+        return hosting;
+    }
 }

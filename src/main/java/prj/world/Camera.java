@@ -3,6 +3,7 @@ package prj.world;
 import org.joml.Vector2d;
 import org.joml.Vector2i;
 import prj.ClientThread;
+import prj.ServerThread;
 import prj.entity.Player;
 import prj.entity.Projectile;
 import prj.item.Bazooka;
@@ -18,6 +19,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.Map;
 
 public class Camera implements MouseListener, MouseMotionListener {
     private final Vector2d pos;
@@ -147,10 +149,34 @@ public class Camera implements MouseListener, MouseMotionListener {
                 }
             } else if (itemHeld instanceof Block block) {
                 if (cursorToPlayerDistance <= block.getRange()) {
-                    Wall w = new DefaultBreakableWall(cellCordsX, cellCordsY);
+                    Wall newW = new DefaultBreakableWall(cellCordsX, cellCordsY);
                     Wall old = world.getState().wallsByCords.get(cellCords);
-                    world.getState().wallsByCords.put(cellCords, w);
-                    ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, old, w));
+
+                    if(ClientThread.instance.isHosting() && ServerThread.instance != null) {
+                        world.getState().wallsByCords.put(cellCords, newW);
+                        ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, old, newW));
+                    }else{
+                        Rectangle rect = new Rectangle(cellCordsX, cellCordsY, 50, 50);
+
+                        boolean isPlayerCollision = world.getLocalPlayer().getHitbox().intersects(rect);
+                        boolean isBlockNeighbour = false;
+                        Wall w = world.getState().wallsByCords.get(cellCords);
+
+                        if(w == null && !isPlayerCollision) {
+                            w = world.getState().wallsByCords.get(new Point(cellCordsX - 50, cellCordsY));
+                            if (w != null && w.isCollision()) isBlockNeighbour = true;
+                            else w = world.getState().wallsByCords.get(new Point(cellCordsX + 50, cellCordsY));
+                            if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                            else w = world.getState().wallsByCords.get(new Point(cellCordsX, cellCordsY - 50));
+                            if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                            else w = world.getState().wallsByCords.get(new Point(cellCordsX, cellCordsY + 50));
+                            if (!isBlockNeighbour && w != null && w.isCollision()) isBlockNeighbour = true;
+                        }
+
+                        if (isBlockNeighbour) {
+                            world.getState().wallsByCords.put(cellCords, newW);
+                        }
+                    }
                 }
             }
             else if(itemHeld instanceof Bazooka bazooka){
