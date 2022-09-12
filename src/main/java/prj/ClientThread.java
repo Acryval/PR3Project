@@ -277,19 +277,7 @@ public class ClientThread extends GameState {
     }
 
     public void draw(Graphics2D g, int width, int height){
-        g.setColor(Color.black);
-        g.setFont(defaultFont);
-
         Vector2i off = cam.getGlobalOffset();
-
-        if(Prj.SHOWFPS) {
-            g.drawString(String.format("FPS: %.0f", GameStateManager.instance.getFps()), 7, 76);
-        }
-        if(Prj.DEBUG) {
-            g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - width / 2, height / 2 - cam.getMouse().y), 7, 88);
-            g.drawString(String.format("offx: %d, offy: %d", cam.getOffset().x, cam.getOffset().y), 7, 100);
-            g.drawString(String.format("px: %d, py: %d", -(int) cam.getPos().x, (int) cam.getPos().y), 7, 112);
-        }
 
         g.translate(width/2, height/2);
         g.translate(off.x, off.y);
@@ -297,6 +285,24 @@ public class ClientThread extends GameState {
         world.draw(g);
         world.getLocalPlayer().getItemBar().draw(g);
         cam.draw(g);
+
+        g.translate(-width/2, -height/2);
+        g.translate(-off.x, -off.y);
+
+        g.setColor(Color.black);
+        g.setFont(defaultFont);
+        if(hosting && ServerThread.instance != null){
+            g.drawString(networkManager.getServerAddressString(), 7, 76);
+        }
+
+        if(Prj.SHOWFPS) {
+            g.drawString(String.format("FPS: %.0f", GameStateManager.instance.getFps()), 7, 88);
+        }
+        if(Prj.DEBUG) {
+            g.drawString(String.format("mx: %d, my: %d", cam.getMouse().x - width / 2, height / 2 - cam.getMouse().y), 7, 100);
+            g.drawString(String.format("offx: %d, offy: %d", cam.getOffset().x, cam.getOffset().y), 7, 112);
+            g.drawString(String.format("px: %d, py: %d", -(int) cam.getPos().x, (int) cam.getPos().y), 7, 124);
+        }
     }
 
     public void update(double dt){
