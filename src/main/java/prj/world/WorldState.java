@@ -1,6 +1,7 @@
 package prj.world;
 
 import prj.entity.Player;
+import prj.entity.Projectile;
 import prj.net.packet.Packable;
 import prj.net.packet.PacketElement;
 import prj.wall.Wall;
@@ -13,10 +14,13 @@ public class WorldState implements Packable {
     public HashMap<String, Player> players;
     @PacketElement
     public HashMap<Point, Wall> wallsByCords;
+    @PacketElement
+    public HashMap<Point, Projectile> projectiles;
 
     public WorldState() {
         wallsByCords = new HashMap<>();
         players = new HashMap<>();
+        projectiles = new HashMap<>();
     }
 
     public WorldState(WorldState initialState) {
@@ -27,5 +31,6 @@ public class WorldState implements Packable {
     public void set(WorldState state){
         wallsByCords = state.wallsByCords;
         players = state.players;
+        projectiles = state.projectiles;
     }
 }

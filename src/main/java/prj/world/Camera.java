@@ -159,16 +159,16 @@ public class Camera implements MouseListener, MouseMotionListener {
             }
             else if(itemHeld instanceof Bazooka bazooka){
                 Vector2i scr = ClientThread.instance.scrSize;
-
                 /* TODO
                 Projectile projectile = new Projectile(
                         world.getLocalPlayer().getX(),
                         world.getLocalPlayer().getY(),
                         mouse.x - scr.x/2,
                         mouse.y - scr.y/2,
-                        0.0001
+                        0.001
                         );
-                 */
+                ClientThread.instance.getNetworkManager().send(new );
+                */
             }
         }
     }

@@ -15,10 +15,11 @@ public class Projectile {
     private int startingY;
     private int finalX;
     private int finalY;
-    private double t;
     private double projectileSpeed;
 
     public Projectile(int startingX, int startingY, int finalX, int finalY, double projectileSpeed) {
+        this.x = startingX;
+        this.y = startingY;
         this.startingX = startingX;
         this.startingY = startingY;
         this.finalX = finalX;
@@ -74,14 +75,6 @@ public class Projectile {
         this.finalY = finalY;
     }
 
-    public double getT() {
-        return t;
-    }
-
-    public void setT(double t) {
-        this.t = t;
-    }
-
     public double getProjectileSpeed() {
         return projectileSpeed;
     }
@@ -91,8 +84,8 @@ public class Projectile {
     }
 
     public void calculateCurrentPosition() {
-        x = (int)(startingX + (finalX - startingX) * t);
-        y = (int)(startingY + (finalY - startingY) * t);
+        x += (int)((finalX - startingX) * projectileSpeed);
+        y += (int)((finalY - startingY) * projectileSpeed);
     }
 
     public Point getProjectileGridCoords(){
@@ -116,13 +109,12 @@ public class Projectile {
 
     public void moveProjectile(WorldState state) {
         calculateCurrentPosition();
-        t += projectileSpeed;
 
         for(int i = getProjectileGridCoords().x - 100 ; i <= getProjectileGridCoords().x + 150 ; i += 50) {
             for (int j = getProjectileGridCoords().y - 100; j <= getProjectileGridCoords().y + 150; j += 50) {
                 Wall wall = state.wallsByCords.get(new Point(i, j));
                 if (wall != null) {
-
+                    // boom!
                 }
             }
         }

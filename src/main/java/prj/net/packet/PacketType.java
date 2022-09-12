@@ -30,5 +30,8 @@ public enum PacketType {
     scrDimension,
     setUsername,
     startServer,
-    connectToServer
+    connectToServer,
+
+    // projectile packet
+    projectilePos
 }
