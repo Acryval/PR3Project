@@ -152,7 +152,7 @@ public class Camera implements MouseListener, MouseMotionListener {
                     Wall newW = new DefaultBreakableWall(cellCordsX, cellCordsY);
                     Wall old = world.getState().wallsByCords.get(cellCords);
 
-                    if(ServerThread.instance != null) {
+                    if(!ClientThread.instance.isHosting() || ServerThread.instance != null) {
                         world.getState().wallsByCords.put(cellCords, newW);
                         ClientThread.instance.getNetworkManager().send(new BlockPlacedPacket(cellCords, old, newW));
                     }else{
